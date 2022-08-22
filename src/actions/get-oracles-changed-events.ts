@@ -2,15 +2,15 @@ import { fromSmartContractDecimals } from "@taikai/dappkit";
 import db from "src/db";
 import {
   BlockQuery,
-  BountiesProcessedPerNetwork,
+  EventsProcessed,
   EventsQuery,
 } from "src/interfaces/block-chain-service";
 import BlockChainService from "src/services/block-chain-service";
 import logger from "src/utils/logger-handler";
 
 export const name = "getOraclesChangedEvents";
-export const schedule = "1 * * * * *";
-export const description = "update oracles amount";
+export const schedule = "*/30 * * * *"; // Each 30 minutes
+export const description = "Sync oracles data and update council's count";
 export const author = "clarkjoao";
 
 async function _validateBlockQuery(
@@ -47,9 +47,11 @@ async function _validateBlockQuery(
   return newQuery;
 }
 
-export default async function action(query?: EventsQuery): Promise<string[]> {
+export default async function action(
+  query?: EventsQuery
+): Promise<EventsProcessed> {
   const addressProcessed: string[] = [];
-  const bountiesProcessedPerNetwork: BountiesProcessedPerNetwork[] = [];
+  const eventsProcessed: EventsProcessed = {};
 
   logger.info("retrieving oracles changed events");
 
@@ -100,14 +102,15 @@ export default async function action(query?: EventsQuery): Promise<string[]> {
       _network.councilMembers = new_members;
       addressProcessed.push(...new_members);
 
-      await _network.save();
+      // Update network council members only if schema is updated
+      if (!query?.blockQuery) await _network.save();
 
-      bountiesProcessedPerNetwork.push({ network, addressProcessed });
+      eventsProcessed[network.name as string] = addressProcessed;
     }
   } catch (err) {
     logger.error(`Error ${name}: ${err}`);
   }
   if (!query) await service.saveLastBlock();
 
-  return addressProcessed;
+  return eventsProcessed;
 }

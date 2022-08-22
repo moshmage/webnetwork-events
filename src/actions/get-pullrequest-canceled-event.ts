@@ -1,7 +1,7 @@
 import db from "src/db";
 import {
   BountiesProcessed,
-  BountiesProcessedPerNetwork,
+  EventsProcessed,
   EventsQuery,
 } from "src/interfaces/block-chain-service";
 import BlockChainService from "src/services/block-chain-service";
@@ -12,8 +12,8 @@ import GHService from "src/services/github";
 import { slashSplit } from "src/utils/string";
 
 export const name = "getBountyPullRequestCanceledEvents";
-export const schedule = "1 * * * * *";
-export const description = "Get bounty pull request created events";
+export const schedule = "*/10 * * * *"; // Each 10 minutes
+export const description = "Sync pull-request canceled events";
 export const author = "clarkjoao";
 
 async function closePullRequest(bounty: Bounty, pullRequest: PullRequest) {
@@ -35,8 +35,8 @@ async function closePullRequest(bounty: Bounty, pullRequest: PullRequest) {
 
 export default async function action(
   query?: EventsQuery
-): Promise<BountiesProcessedPerNetwork[]> {
-  const bountiesProcessedPerNetwork: BountiesProcessedPerNetwork[] = [];
+): Promise<EventsProcessed> {
+  const eventsProcessed: EventsProcessed = {};
 
   logger.info("retrieving bounty created events");
 
@@ -51,7 +51,7 @@ export default async function action(
     for (let event of events) {
       const { network, eventsOnBlock } = event;
 
-      const bountiesProcessed: BountiesProcessed[] = [];
+      const bountiesProcessed: BountiesProcessed = {};
 
       if (!(await service.networkService.loadNetwork(network.networkAddress))) {
         logger.error(`Error loading network contract ${network.name}`);
@@ -112,15 +112,15 @@ export default async function action(
           await bounty.save();
         }
 
-        bountiesProcessed.push({ bounty, eventBlock });
+        bountiesProcessed[bounty.issueId as string] = { bounty, eventBlock };
 
         logger.info(`Pull Request ${id} Created`);
       }
-      bountiesProcessedPerNetwork.push({ network, bountiesProcessed });
+      eventsProcessed[network.name as string] = bountiesProcessed;
     }
     if (!query) await service.saveLastBlock();
   } catch (err) {
     logger.error(`Error ${name}:`, err);
   }
-  return bountiesProcessedPerNetwork;
+  return eventsProcessed;
 }

@@ -3,7 +3,7 @@ import { Op } from "sequelize";
 import db from "src/db";
 import {
   BountiesProcessed,
-  BountiesProcessedPerNetwork,
+  EventsProcessed,
   EventsQuery,
 } from "src/interfaces/block-chain-service";
 import BlockChainService from "src/services/block-chain-service";
@@ -12,14 +12,15 @@ import logger from "src/utils/logger-handler";
 import { slashSplit } from "src/utils/string";
 
 export const name = "get-bounty-moved-to-open";
-export const schedule = "1 * * * * *";
-export const description = "moving draft bounties to open";
+export const schedule = "*/5 * * * *"; // Every 5 minutes
+export const description =
+  "move to 'OPEN' all 'DRAFT' bounties that have Draft Time finished as set at the block chain";
 export const author = "clarkjoao";
 
 export default async function action(
   query?: EventsQuery
-): Promise<BountiesProcessedPerNetwork[]> {
-  const bountiesProcessedPerNetwork: BountiesProcessedPerNetwork[] = [];
+): Promise<EventsProcessed> {
+  const eventsProcessed: EventsProcessed = {};
 
   logger.info("Starting move bounties to open");
 
@@ -28,14 +29,16 @@ export default async function action(
   const networks = await service.getNetworks();
   try {
     for (const network of networks) {
-      logger.info(`Moving bounties to open for network ${network.name}`);
+      logger.info(`Bounties at ${network.name.toUpperCase()} network`);
 
-      const bountiesProcessed: BountiesProcessed[] = [];
+      const bountiesProcessed: BountiesProcessed = {};
 
       if (
         !(await service.networkService.loadNetwork(network?.networkAddress))
       ) {
-        logger.error(`Error loading network networkService ${network.name}`);
+        logger.error(
+          `Error at loading network networkService: ${network.networkAddress}`
+        );
         continue;
       }
 
@@ -53,15 +56,17 @@ export default async function action(
       });
 
       if (!bounties) {
-        logger.error(`No issues found for network ${network.name}`);
+        logger.error(
+          `${network.name.toUpperCase()} no have bounties to be moved`
+        );
         continue;
       }
       const repositoriesDetails = {};
 
-      for (const bonty of bounties) {
-        logger.info(`Moving issue ${bonty.id} to open`);
+      for (const bounty of bounties) {
+        logger.info(`Moving bounty ${bounty.issueId}`);
 
-        const [owner, repo] = slashSplit(bonty?.repository?.githubPath);
+        const [owner, repo] = slashSplit(bounty?.repository?.githubPath);
 
         if (!repositoriesDetails[`${owner}/${repo}`]) {
           repositoriesDetails[`${owner}/${repo}`] =
@@ -78,7 +83,7 @@ export default async function action(
           const ghIssue = await GHService.issueDetails(
             repo,
             owner,
-            bonty?.githubId as string
+            bounty?.githubId as string
           );
           await GHService.issueRemoveLabel(
             ghIssue.repository.issue.id,
@@ -86,16 +91,21 @@ export default async function action(
           );
         }
 
-        bonty.state = "open";
-        await bonty.save();
-        bountiesProcessed.push({ bounty: bonty, eventBlock: null });
-        logger.info(`Issue ${bonty.id} moved to open`);
+        bounty.state = "open";
+        await bounty.save();
+
+        bountiesProcessed[bounty.issueId as string] = {
+          bounty,
+          eventBlock: null,
+        };
+
+        logger.info(`Bounty ${bounty.issueId} has moved to open`);
       }
-      bountiesProcessedPerNetwork.push({ network, bountiesProcessed });
+      eventsProcessed[network.name as string] = bountiesProcessed;
     }
   } catch (err) {
-    logger.error(`Error moving bounties: ${err}`);
+    logger.error(`Error at try moving bounties: ${err}`);
   }
 
-  return bountiesProcessedPerNetwork;
+  return eventsProcessed;
 }

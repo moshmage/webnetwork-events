@@ -2,7 +2,7 @@ import { ERC20 } from "@taikai/dappkit";
 import db from "src/db";
 import {
   BountiesProcessed,
-  BountiesProcessedPerNetwork,
+  EventsProcessed,
   EventsQuery,
 } from "src/interfaces/block-chain-service";
 import BlockChainService from "src/services/block-chain-service";
@@ -10,8 +10,8 @@ import NetworkService from "src/services/network-service";
 import logger from "src/utils/logger-handler";
 
 export const name = "getBountyCreatedEvents";
-export const schedule = "1 * * * * *";
-export const description = "retrieving bounty created events";
+export const schedule = "*/10 * * * *"; // Each 10 minuts
+export const description = "sync bounty data and move to 'DRAFT;";
 export const author = "clarkjoao";
 
 async function validateToken(
@@ -44,8 +44,8 @@ async function validateToken(
 
 export default async function action(
   query?: EventsQuery
-): Promise<BountiesProcessedPerNetwork[]> {
-  const bountiesProcessedPerNetwork: BountiesProcessedPerNetwork[] = [];
+): Promise<EventsProcessed> {
+  const eventsProcessed: EventsProcessed = {};
   logger.info("retrieving bounty created events");
 
   const service = new BlockChainService();
@@ -59,7 +59,7 @@ export default async function action(
     for (let event of events) {
       const { network, eventsOnBlock } = event;
 
-      const bountiesProcessed: BountiesProcessed[] = [];
+      const bountiesProcessed: BountiesProcessed = {};
 
       if (!(await service.networkService.loadNetwork(network.networkAddress))) {
         logger.error(`Error loading network contract ${network.name}`);
@@ -110,15 +110,15 @@ export default async function action(
         }
         await bounty.save();
 
-        bountiesProcessed.push({ bounty, eventBlock });
+        bountiesProcessed[bounty.issueId as string] = { bounty, eventBlock };
 
         logger.info(`Bounty cid: ${cid} created`);
       }
-      bountiesProcessedPerNetwork.push({ network, bountiesProcessed });
+      eventsProcessed[network.name as string] = bountiesProcessed;
     }
     if (!query) await service.saveLastBlock();
   } catch (err) {
     logger.error(`Error ${name}:`, err);
   }
-  return bountiesProcessedPerNetwork;
+  return eventsProcessed;
 }
