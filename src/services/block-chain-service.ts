@@ -90,6 +90,17 @@ export default class BlockChainService {
     if (lastBlock > 0) this._db.update({ lastBlock });
   }
 
+  private async _getRegistryAddress(): Promise<string | undefined> {
+    const registryAddress = await database.settings.findOne({
+      where: {
+        key: "networkRegistry",
+        group: "contracts",
+      },
+    });
+
+    return registryAddress?.value;
+  }
+
   /*
     Get events from all networks and last range of blocks processed
   */
@@ -173,17 +184,6 @@ export default class BlockChainService {
     return network;
   }
 
-  private async _getRegistryAddress(): Promise<string | undefined> {
-    const registryAddress = await database.settings.findOne({
-      where: {
-        key: "networkRegistry",
-        group: "contracts",
-      },
-    });
-
-    return registryAddress?.value;
-  }
-
   /*
     Get events from a specific network and especifc range of blocks
   */
@@ -194,6 +194,7 @@ export default class BlockChainService {
     const { networkName, blockQuery } = query;
     const networkEvent: EventsPerNetwork = {
       network: {},
+      registry: {},
       eventsOnBlock: [],
     };
 
@@ -209,8 +210,11 @@ export default class BlockChainService {
       const registryAddress = await this._getRegistryAddress();
 
       if (!registryAddress) throw Error("Missing network registry address");
+      const registry = await this.networkService.loadRegistry(registryAddress);
 
-      if (!(await this.networkService.loadRegistry(registryAddress))) {
+      networkEvent.registry = registry;
+
+      if (!registry) {
         throw Error(
           `Error loading network registry contract ${registryAddress}`
         );

@@ -27,8 +27,8 @@ async function mergeProposal(bounty, proposal) {
 
   const [owner, repo] = slashSplit(bounty?.repository?.githubPath);
 
-  await GHService.mergeProposal(owner, repo, pullRequest?.githubId as string);
-  await GHService.issueClose(repo, owner, bounty?.issueId);
+  await GHService.mergeProposal(repo, owner, pullRequest?.githubId as string);
+  await GHService.issueClose(repo, owner, bounty?.githubId);
 
   return pullRequest;
 }
@@ -69,16 +69,16 @@ export default async function action(
 ): Promise<EventsProcessed> {
   const eventsProcessed: EventsProcessed = {};
 
-  logger.info("retrieving bounty closed events");
-
-  const service = new BlockChainService();
-  await service.init(name);
-
-  const events = await service.getEvents(query);
-
-  logger.info(`found ${events.length} events`);
-
   try {
+    logger.info("retrieving bounty closed events");
+
+    const service = new BlockChainService();
+    await service.init(name);
+
+    const events = await service.getEvents(query);
+
+    logger.info(`found ${events.length} events`);
+
     for (let event of events) {
       const { network, eventsOnBlock } = event;
 
@@ -125,7 +125,7 @@ export default async function action(
         }
 
         const proposal = bounty?.merge_proposals?.find(
-          (p) => p.id === proposalId
+          (p) => p.contractId?.toString() === proposalId?.toString()
         );
 
         if (networkBounty.closed && !networkBounty.canceled && proposal) {
@@ -146,10 +146,10 @@ export default async function action(
       }
       eventsProcessed[network.name as string] = bountiesProcessed;
     }
+    if (!query) service.saveLastBlock();
   } catch (err) {
     logger.error(`Error to close bounty:`, err);
   }
-  if (query) service.saveLastBlock();
 
   return eventsProcessed;
 }
