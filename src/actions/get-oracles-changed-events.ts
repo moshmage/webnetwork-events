@@ -47,7 +47,7 @@ async function _validateBlockQuery(
   return newQuery;
 }
 
-export default async function action(
+export async function action(
   query?: EventsQuery
 ): Promise<EventsProcessed> {
   const addressProcessed: string[] = [];

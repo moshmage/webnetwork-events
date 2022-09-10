@@ -12,7 +12,7 @@ export const schedule = "*/60 * * * *"; // Each 60 minutes
 export const description = "retrieving bounty created events";
 export const author = "MarcusviniciusLsantos";
 
-export default async function action(
+export async function action(
   query?: EventsQuery
 ): Promise<EventsProcessed> {
   const eventsProcessed: EventsProcessed = {};
