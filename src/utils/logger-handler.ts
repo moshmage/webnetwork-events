@@ -1,7 +1,7 @@
 import { Client } from "@elastic/elasticsearch";
 import "dotenv/config";
 
-const Levels = { log: "LOG", info: "INFO", error: "ERROR" };
+const Levels = { log: "log", info: "info", error: "error" };
 const colorsLevels = {
   [Levels.log]: "\x1b[37m",
   [Levels.info]: "\x1b[32m",
