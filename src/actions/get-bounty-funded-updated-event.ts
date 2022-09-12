@@ -12,9 +12,7 @@ export const schedule = "*/10 * * * *"; // Each 10 minutes
 export const description = "retrieving bounty created events";
 export const author = "MarcusviniciusLsantos";
 
-export async function action(
-  query?: EventsQuery
-): Promise<EventsProcessed> {
+export async function action(query?: EventsQuery): Promise<EventsProcessed> {
   const eventsProcessed: EventsProcessed = {};
 
   try {
@@ -77,7 +75,7 @@ export async function action(
 
       eventsProcessed[network.name as string] = bountiesProcessed;
     }
-    if (!query) await service.saveLastBlock();
+    if (!query?.networkName) await service.saveLastBlock();
   } catch (err) {
     logger.error(`Error update bounty amount:`, err);
   }

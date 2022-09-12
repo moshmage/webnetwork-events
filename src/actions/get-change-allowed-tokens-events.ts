@@ -12,9 +12,7 @@ export const schedule = "*/60 * * * *"; // Each 60 minutes
 export const description = "retrieving bounty created events";
 export const author = "MarcusviniciusLsantos";
 
-export async function action(
-  query?: EventsQuery
-): Promise<EventsProcessed> {
+export async function action(query?: EventsQuery): Promise<EventsProcessed> {
   const eventsProcessed: EventsProcessed = {};
 
   try {
@@ -120,7 +118,7 @@ export async function action(
 
       eventsProcessed[network.name!] = [network.networkAddress!];
     }
-    if (!query) await service.saveLastBlock();
+    if (!query?.networkName) await service.saveLastBlock();
   } catch (err) {
     logger.error(
       `[ERROR_REGISTRY] Failed to save tokens from past-events`,

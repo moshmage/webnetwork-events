@@ -47,9 +47,7 @@ async function _validateBlockQuery(
   return newQuery;
 }
 
-export async function action(
-  query?: EventsQuery
-): Promise<EventsProcessed> {
+export async function action(query?: EventsQuery): Promise<EventsProcessed> {
   const addressProcessed: string[] = [];
   const eventsProcessed: EventsProcessed = {};
 
@@ -107,7 +105,7 @@ export async function action(
 
       eventsProcessed[network.name as string] = addressProcessed;
     }
-    if (!query) await service.saveLastBlock();
+    if (!query?.networkName) await service.saveLastBlock();
   } catch (err) {
     logger.error(`Error ${name}: ${err}`);
   }
