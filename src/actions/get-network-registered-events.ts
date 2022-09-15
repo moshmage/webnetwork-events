@@ -18,6 +18,9 @@ export async function action(query?: EventsQuery): Promise<EventsProcessed> {
     const processor = async (block: XEvents<NetworkCreatedEvent>, network) => {
       const {network: createdNetworkAddress} = block.returnValues;
 
+      if (network.isRegistered && network.networkAddress === createdNetworkAddress)
+        return logger.warn(`${name} ${createdNetworkAddress} was already registered`);
+
       const updated =
         !network.isRegistered && network.networkAddress === createdNetworkAddress
           ? await db.networks.update({isRegistered: true}, {where: {networkAddress: network.networkAddress}})
