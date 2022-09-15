@@ -6,7 +6,7 @@ import {XEvents} from "@taikai/dappkit";
 import {NetworkCreatedEvent} from "@taikai/dappkit/dist/src/interfaces/events/network-factory-v2-events";
 
 export const name = "getNetworkRegisteredEvents";
-export const schedule = "*/1 * * * *";
+export const schedule = "*/10 * * * *";
 export const description = "retrieving network registered on registry events";
 export const author = "vhcsilva";
 
