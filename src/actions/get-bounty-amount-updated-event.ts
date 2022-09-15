@@ -1,80 +1,47 @@
 import db from "src/db";
-import {
-  BountiesProcessed,
-  EventsProcessed,
-  EventsQuery,
-} from "src/interfaces/block-chain-service";
-import BlockChainService from "src/services/block-chain-service";
+import {EventsProcessed, EventsQuery,} from "src/interfaces/block-chain-service";
 import logger from "src/utils/logger-handler";
+import {EventService} from "../services/event-service";
+import {XEvents} from "@taikai/dappkit";
+import {BountyAmountUpdatedEvent} from "@taikai/dappkit/dist/src/interfaces/events/network-v2-events";
+import {DB_BOUNTY_NOT_FOUND, NETWORK_BOUNTY_NOT_FOUND} from "../utils/messages.const";
 
 export const name = "getBountyAmountUpdatedEvents";
-export const schedule = "*/10 * * * *"; // Each 10 minutes
+export const schedule = "*/13 * * * *";
 export const description = "retrieving bounty updated events";
 export const author = "clarkjoao";
 
-export async function action(
-  query?: EventsQuery
-): Promise<EventsProcessed> {
+export async function action(query?: EventsQuery): Promise<EventsProcessed> {
   const eventsProcessed: EventsProcessed = {};
 
   try {
-    logger.info("retrieving bounty updated events");
+    const service = new EventService(name, query);
 
-    const service = new BlockChainService();
-    await service.init(name);
+    const processor = async (block: XEvents<BountyAmountUpdatedEvent>, network) => {
+      const {id} = block.returnValues;
 
-    const events = await service.getEvents(query);
+      const bounty = await service.chainService.networkService.network.getBounty(id);
+      if (!bounty)
+        logger.error(NETWORK_BOUNTY_NOT_FOUND(name, id, network.networkAddress));
+      else {
+        const dbBounty = await db.issues.findOne({
+          where: {contractId: id, issueId: bounty.cid, network_id: network.id}});
 
-    logger.info(`found ${events.length} events`);
+        if (!dbBounty)
+          logger.error(DB_BOUNTY_NOT_FOUND(name, bounty.cid, network.id))
+        else {
+          dbBounty.amount = +bounty.tokenAmount;
+          await dbBounty.save();
 
-    for (let event of events) {
-      const { network, eventsOnBlock } = event;
-
-      const bountiesProcessed: BountiesProcessed = {};
-
-      if (!(await service.networkService.loadNetwork(network.networkAddress))) {
-        logger.error(`Error loading network contract ${network.name}`);
-        continue;
-      }
-
-      for (let eventBlock of eventsOnBlock) {
-        const { id } = eventBlock.returnValues;
-
-        const networkBounty = await service.networkService?.network?.getBounty(
-          id
-        );
-
-        if (!networkBounty) {
-          logger.info(`Bounty id: ${id} not found`);
-          continue;
+          eventsProcessed[network.name] = {...eventsProcessed[network.name], [dbBounty.issueId!.toString()]: {bounty: dbBounty, eventBlock: block}};
         }
-
-        const bounty = await db.issues.findOne({
-          where: {
-            contractId: id,
-            issueId: networkBounty?.cid,
-            network_id: network?.id,
-          },
-        });
-
-        if (!bounty) {
-          logger.info(`Bounty cid: ${networkBounty.cid} not found`);
-          continue;
-        }
-
-        bounty.amount = +networkBounty.tokenAmount;
-        await bounty.save();
-
-        bountiesProcessed[bounty.issueId as string] = { bounty, eventBlock };
-
-        logger.info(`Bounty cid: ${networkBounty.cid} updated`);
       }
-      eventsProcessed[network.name as string] = bountiesProcessed;
     }
 
-    if (!query) await service.saveLastBlock();
-  } catch (err) {
-    logger.error(`Error update bounty amount:`, err);
+    await service.processEvents(processor);
+
+  } catch (e) {
+    logger.error(`${name} Error`, e);
   }
 
   return eventsProcessed;

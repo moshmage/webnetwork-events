@@ -1,20 +1,21 @@
 import { Client } from "@elastic/elasticsearch";
 import "dotenv/config";
 
-const Levels = { log: "log", info: "info", error: "error" };
-const colorsLevels = {
-  [Levels.log]: "\x1b[37m",
-  [Levels.info]: "\x1b[32m",
-  [Levels.error]: "\x1b[31m",
-  reset: "\x1b[0m",
-};
+enum DebugLevel { none, error, warn, info, log};
+const Levels = { log: "log", info: "info", error: "error", warn: "warn" };
+
 const {
   ELASTIC_SEARCH_URL: node,
   ELASTIC_SEARCH_USERNAME: username,
   ELASTIC_SEARCH_PASSWORD: password,
 } = process.env;
 
-const output = (level, message, ...rest) => { // eslint-disable-line
+const LOG_LEVEL = process.env.LOG_LEVEL ? parseInt(process.env.LOG_LEVEL, 10) : DebugLevel.log;
+
+const output = (level, message, rest) => { // eslint-disable-line
+  if (LOG_LEVEL && LOG_LEVEL <= +DebugLevel[level])
+    return;
+
   let _rest;
 
   if (rest.some(v => v !== undefined))
@@ -34,5 +35,6 @@ const output = (level, message, ...rest) => { // eslint-disable-line
 const info = (message?, ...rest: any) => output(Levels.info, message, rest);
 const error = (message?, ...rest: any) => output(Levels.error, message, rest);
 const log = (message?, ...rest: any) => output(Levels.log, message, rest);
+const warn = (message?, ...rest: any) => output(Levels.warn, message, rest);
 
-export default { info, error, log };
+export default { info, error, log, warn };

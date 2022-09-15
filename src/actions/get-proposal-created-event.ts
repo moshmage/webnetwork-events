@@ -1,15 +1,14 @@
-import { Op } from "sequelize";
 import db from "src/db";
-import {
-  BountiesProcessed,
-  EventsProcessed,
-  EventsQuery,
-} from "src/interfaces/block-chain-service";
-import BlockChainService from "src/services/block-chain-service";
 import logger from "src/utils/logger-handler";
+import {EventsProcessed, EventsQuery,} from "src/interfaces/block-chain-service";
+import {XEvents} from "@taikai/dappkit";
+import {BountyProposalCreatedEvent} from "@taikai/dappkit/dist/src/interfaces/events/network-v2-events";
+import {EventService} from "../services/event-service";
+import {NETWORK_BOUNTY_NOT_FOUND} from "../utils/messages.const";
+import {validateProposal} from "../modules/proposal-validate-state";
 
 export const name = "getBountyProposalCreatedEvents";
-export const schedule = "*/10 * * * *"; // Each 10 minutes
+export const schedule = "*/13 * * * *";
 export const description = "Sync proposal created events";
 export const author = "clarkjoao";
 
@@ -19,123 +18,42 @@ export async function action(
   const eventsProcessed: EventsProcessed = {};
 
   try {
-    logger.info("retrieving proposal created events");
+    const service = new EventService(name, query);
 
-    const service = new BlockChainService();
-    await service.init(name);
+    const processor = async (block: XEvents<BountyProposalCreatedEvent>, network) => {
+      const {bountyId, prId, proposalId} = block.returnValues;
 
-    const events = await service.getEvents(query);
+      const bounty = await service.chainService.networkService.network.getBounty(bountyId);
+      if (!bounty)
+        return logger.error(NETWORK_BOUNTY_NOT_FOUND(name, bountyId, network.networkAddress));
 
-    logger.info(`found ${events.length} events`);
-    for (let event of events) {
-      const { network, eventsOnBlock } = event;
+      const values = await validateProposal(bounty, prId, proposalId, network.id);
+      if (!values?.proposal || !values?.dbBounty || !values?.dbPullRequest)
+        return;
 
-      const bountiesProcessed: BountiesProcessed = {};
+      const {proposal, dbBounty, dbUser, dbPullRequest} = values;
 
-      if (!(await service.networkService.loadNetwork(network.networkAddress))) {
-        logger.error(`Error loading network contract ${network.name}`);
-        continue;
+      await db.merge_proposals.create({
+        scMergeId: proposal.id.toString(),
+        issueId: dbBounty.id,
+        pullRequestId: dbPullRequest.id,
+        githubLogin: dbUser?.githubLogin,
+        creator: proposal.creator
+      });
+
+      if (dbBounty.state !== "proposal") {
+        dbBounty.state = "proposal";
+        await dbBounty.save();
       }
 
-      for (let eventBlock of eventsOnBlock) {
-        const { bountyId: id, prId, proposalId } = eventBlock.returnValues;
-        const networkBounty = await service.networkService?.network?.getBounty(
-          id
-        );
+      eventsProcessed[network.name] = {...eventsProcessed[network.name], [dbBounty.issueId!.toString()]: {bounty: dbBounty, eventBlock: block}};
 
-        if (!networkBounty) {
-          logger.info(`Bounty id: ${id} not found`);
-          continue;
-        }
-
-        const bounty = await db.issues.findOne({
-          where: {
-            contractId: +networkBounty.id,
-            issueId: networkBounty.cid,
-            creatorAddress: networkBounty.creator,
-            network_id: network.id,
-          },
-        });
-
-        if (!bounty) {
-          logger.info(`Bounty cid: ${id} not found`);
-          continue;
-        }
-
-        const networkPullRequest = networkBounty.pullRequests.find(
-          (pr) => +pr.id === +prId
-        );
-
-        if (!networkPullRequest) {
-          logger.info(`Pull request id: ${prId} not found`);
-          continue;
-        }
-
-        const pullRequest = await db.pull_requests.findOne({
-          where: {
-            issueId: bounty.id,
-            contractId: +networkPullRequest?.id,
-            githubId: networkPullRequest?.cid.toString(),
-          },
-        });
-
-        if (!pullRequest) {
-          logger.info(`Pull request cid: ${networkPullRequest.cid} not found`);
-          continue;
-        }
-
-        const networkProposal = networkBounty.proposals.find(
-          (pr) => +pr.id === +proposalId
-        );
-
-        if (!networkProposal) {
-          logger.info(`Proposal id: ${proposalId} not found`);
-          continue;
-        }
-
-        const proposal = await db.merge_proposals.findOne({
-          where: {
-            pullRequestId: pullRequest?.id,
-            issueId: bounty?.id,
-            contractId: +networkProposal.id,
-          },
-        });
-
-        if (!proposal) {
-          const user = await db.users.findOne({
-            where: {
-              address: {
-                [Op.iLike]: networkProposal.creator.toLowerCase(),
-              },
-            },
-          });
-
-          await db.merge_proposals.create({
-            scMergeId: networkProposal?.id?.toString(),
-            issueId: bounty.id,
-            pullRequestId: pullRequest.id,
-            githubLogin: user?.githubLogin,
-            contractId: networkProposal.id,
-            creator: networkProposal.creator,
-          });
-        }
-
-        if (bounty.state !== "proposal") {
-          bounty.state = "proposal";
-
-          await bounty.save();
-        }
-
-        bountiesProcessed[bounty.issueId as string] = { bounty, eventBlock };
-
-        logger.info(`Proposal cid: ${id} created`);
-      }
-
-      eventsProcessed[network.name as string] = bountiesProcessed;
     }
-    if (!query?.networkName) await service.saveLastBlock();
+
+    await service.processEvents(processor);
+
   } catch (err) {
-    logger.error(`Error ${name}:`, err);
+    logger.error(`${name} Error`, err);
   }
   return eventsProcessed;
 }

@@ -1,16 +1,12 @@
 import db from "src/db";
-
-import {
-  EventsProcessed,
-  EventsQuery,
-} from "src/interfaces/block-chain-service";
-
-import BlockChainService from "src/services/block-chain-service";
-
 import logger from "src/utils/logger-handler";
+import {EventsProcessed, EventsQuery,} from "src/interfaces/block-chain-service";
+import {EventService} from "../services/event-service";
+import {XEvents} from "@taikai/dappkit";
+import {NetworkCreatedEvent} from "@taikai/dappkit/dist/src/interfaces/events/network-factory-v2-events";
 
-export const name = "getNetworkCreatedEvents";
-export const schedule = "*/30 * * * *"; // Each 30 minutes
+export const name = "getNetworkRegisteredEvents";
+export const schedule = "*/1 * * * *";
 export const description = "retrieving network registered on registry events";
 export const author = "vhcsilva";
 
@@ -18,46 +14,24 @@ export async function action(query?: EventsQuery): Promise<EventsProcessed> {
   const eventsProcessed: EventsProcessed = {};
 
   try {
-    logger.info("Retrieving network registered events");
 
-    const service = new BlockChainService();
-    await service.init(name);
+    const processor = async (block: XEvents<NetworkCreatedEvent>, network) => {
+      const {network: createdNetworkAddress} = block.returnValues;
 
-    const events = await service.getEvents(query, true);
+      const updated =
+        !network.isRegistered && network.networkAddress === createdNetworkAddress
+          ? await db.networks.update({isRegistered: true}, {where: {networkAddress: network.networkAddress}})
+          : [0]
 
-    const totalEvents = events.reduce(
-      (acc, event) => acc + event.eventsOnBlock.length,
-      0
-    );
 
-    logger.info(`Found ${totalEvents} events`);
-    for (let event of events) {
-      const { network, eventsOnBlock } = event;
-
-      const wasRegistered = !!eventsOnBlock.find(
-        (e) => e.returnValues.network === network.networkAddress
-      );
-
-      if (!network.isRegistered && wasRegistered) {
-        await db.networks.update(
-          {
-            isRegistered: true,
-          },
-          {
-            where: {
-              networkAddress: network.networkAddress,
-            },
-          }
-        );
-
-        eventsProcessed[network.name!] = [network.networkAddress!];
-
-        logger.info(`Network ${network.networkAddress} registered`);
-      }
+      logger.warn(`${name} ${updated[0] > 0 ? 'Registered' : 'Failed to register'} ${createdNetworkAddress}`)
+      eventsProcessed[network.name!] = [network.networkAddress!];
     }
-    if (!query?.networkName) await service.saveLastBlock();
+
+    await (new EventService(name, query, true)).processEvents(processor);
+
   } catch (err) {
-    logger.error(`Error registering network`, err);
+    logger.error(`${name} Error`, err);
   }
 
   return eventsProcessed;

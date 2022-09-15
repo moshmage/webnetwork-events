@@ -6,41 +6,34 @@ import ipfsService from "src/services/ipfs-service";
 import logger from "src/utils/logger-handler";
 
 export const name = "seo-generate-cards";
-export const schedule = "*/15 * * * *"; // Every 15 minutes
-export const description =
-  "Try generate SeoCards for all updated or new bounties";
+export const schedule = "*/10 * * * *";
+export const description = "Try generate SeoCards for all updated or new bounties";
 export const author = "clarkjoao";
+
+const {IPFS_PROJECT_ID, IPFS_PROJECT_SECRET, IPFS_BASE} = process.env;
 
 export async function action(issueId?: string) {
   const bountiesProcessed: any[] = [];
 
+  if ([IPFS_PROJECT_ID, IPFS_PROJECT_SECRET, IPFS_BASE].some(v => !v)) {
+    logger.warn(`Missing id, secret or baseURL, for IPFService`);
+    return bountiesProcessed;
+  }
+
   try {
-    logger.info("Starting SEOCards Generate");
+    logger.info(`${name} start`);
 
     const service = new BlockChainService();
     await service.init(name);
 
-    let where;
-
-    if (issueId) {
-      where = {
-        issueId,
-      };
-    } else {
-      const lastUpdated =
-        service?.db?.updatedAt || service?.db?.createdAt || new Date();
-
-      where = {
-        [Op.or]: [
-          { seoImage: null },
-          {
-            updatedAt: {
-              [Op.gt]: lastUpdated,
-            },
-          },
-        ],
-      };
-    }
+    const where = {
+      ... issueId
+        ? {issueId}
+        : {[Op.or]: [
+            {seoImage: null},
+            {updatedAt: {[Op.gt]: service?.db?.updatedAt || service?.db?.createdAt || new Date()}}
+          ]}
+    };
 
     const include = [
       { association: "developers" },
@@ -51,37 +44,36 @@ export async function action(issueId?: string) {
       { association: "token" },
     ];
 
-    const bounties = await db.issues.findAll({
-      where,
-      include,
-    });
+    const bounties = await db.issues.findAll({where, include,});
 
     if (!bounties.length) {
-      logger.info("No bounties to be updated");
+      logger.info(`${name} No bounties to be updated`);
       return;
     }
 
-    logger.info(`${bounties.length} bounties to be updated`);
+    logger.info(`${name} ${bounties.length} bounties to be updated`);
 
     for (const bounty of bounties) {
       try {
-        logger.info(`Creating card to bounty ${bounty.issueId}`);
+        logger.info(`${name} Creating card to bounty ${bounty.issueId}`);
         const card = await generateCard(bounty);
 
         const { hash } = await ipfsService.add(card);
+        if (!hash)
+          continue;
 
         await bounty.update({ seoImage: hash });
 
         bountiesProcessed.push({ issueId: bounty.issueId, hash });
 
-        logger.info(`Bounty ${bounty.issueId} has been updated`);
+        logger.info(`${name} Bounty card for ${bounty.issueId} has been updated`);
       } catch (error) {
-        logger.error(`Erro bounty ${bounty.issueId}:`, error);
+        logger.error(`${name} Error generating card for ${bounty.issueId}:`, error);
         continue;
       }
     }
   } catch (err) {
-    logger.error(`Error ${name}:`, err);
+    logger.error(`${name} Error`, err);
   }
 
   return bountiesProcessed;
