@@ -43,10 +43,7 @@ export async function action(query?: EventsQuery): Promise<EventsProcessed> {
     const processor = async (block: XEvents<BountyCreatedEvent>, network) => {
       const {id, cid: issueId} = block.returnValues;
 
-      const {chainService:{networkService}} = service;
-      const {network:{getBounty}} = networkService;
-
-      const bounty = await getBounty(id);
+      const bounty = await service.chainService.networkService.network.getBounty(id);
       if (!bounty)
         return logger.error(NETWORK_BOUNTY_NOT_FOUND(name, id, network.networkAddress));
 
@@ -66,7 +63,7 @@ export async function action(query?: EventsQuery): Promise<EventsProcessed> {
       dbBounty.title = bounty.title;
       dbBounty.contractId = id;
 
-      const tokenId = await validateToken(networkService, bounty.transactional, true);
+      const tokenId = await validateToken(service.chainService.networkService, bounty.transactional, true);
       if (!tokenId)
         logger.info(`Failed to validate token ${bounty.transactional}`)
       else dbBounty.tokenId = tokenId;
