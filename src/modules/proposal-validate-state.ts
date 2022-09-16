@@ -63,7 +63,7 @@ export async function validateProposal(bounty: Bounty, prId: number, proposalId:
     return logger.error(`Could not find prId ${prId} on bounty ${bounty.cid}`, bounty.pullRequests);
 
   const dbPullRequest = await db.pull_requests.findOne({
-    where: {issueId: bounty.id, contractId: pullRequest.id}});
+    where: {githubId: pullRequest.cid, contractId: pullRequest.id}});
   if (!dbPullRequest)
     return logger.error(`Could not find pullRequest ${pullRequest.id} in database for network ${network_id}`, pullRequest)
 
