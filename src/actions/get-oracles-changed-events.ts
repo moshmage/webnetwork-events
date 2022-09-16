@@ -32,12 +32,13 @@ export async function action(query?: EventsQuery): Promise<EventsProcessed> {
         decimals = service.chainService.networkService.network.networkToken.decimals;
 
       const actorsNewTotal = fromSmartContractDecimals(newLockedTotal, decimals);
-      const actorExistsInDb = network.councilMembers.some(address => actor === address);
+      const networkCouncilMembers = network.councilMembers || [];
+      const actorExistsInDb = networkCouncilMembers.some(address => actor === address);
 
       if (actorExistsInDb && actorsNewTotal < councilAmount)
-        dbNetwork.councilMembers = network.councilMembers.filter(address => address !== actor);
+        dbNetwork.councilMembers = networkCouncilMembers.filter(address => address !== actor);
       else if (!actorExistsInDb && actorsNewTotal >= councilAmount)
-        dbNetwork.councilMembers = [...network.councilMembers, actor];
+        dbNetwork.councilMembers = [...networkCouncilMembers, actor];
 
       await dbNetwork.save();
 
