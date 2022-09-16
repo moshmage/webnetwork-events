@@ -9,6 +9,7 @@ dotenv.config();
 
 const app: Express = express();
 const port = process.env.WEB_EVENTS_PORT || 3334;
+const useSSL = process.env.SSL_ENABLED === "true";
 
 const corsOptions: CorsOptions = {
   origin: process.env.WEBAPP_URL || "http://localhost:3334",
@@ -23,14 +24,12 @@ app.options("*", cors(corsOptions));
 
 app.use(router);
 
-
-
 const listen = () => {
-  loggerHandler.warn(`API Listening on ${port} over HTTP${process.env.SSL_ENABLED ? "S" : ""}`);
+  loggerHandler.warn(`API Listening on ${port} over HTTP${useSSL ? "S" : ""}`);
   loggerHandler.info(`API corsOptions`, corsOptions);
 }
 
-if (process.env.SSL_ENABLED === "true") {
+if (useSSL) {
   const keyPath = process.env.SSL_PRIVATE_KEY_PATH;
   const certPath = process.env.SSL_CERT_PATH;
 
