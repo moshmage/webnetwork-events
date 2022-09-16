@@ -24,12 +24,12 @@ app.use(cors(corsOptions));
 app.options("*", cors(corsOptions));
 
 app.use((req, res, next) => {
-  loggerHandler.info(`Access`, req);
+  loggerHandler.info(`Access`, {method: req.method, url: req.url, body: req.body});
   next();
 })
 
 app.use((err, req, res, next) => {
-  loggerHandler.error(`Access error`, {err, req});
+  loggerHandler.error(`Access error`, {err, method: req.method, url: req.url, body: req.body});
   res.status(500).send({error: err?.message || `no message`});
 });
 
