@@ -22,6 +22,16 @@ app.use(express.json());
 app.use(cors(corsOptions));
 app.options("*", cors(corsOptions));
 
+app.use((req, res, next) => {
+  loggerHandler.info(`Access`, req);
+  next();
+})
+
+app.use((err, req, res, next) => {
+  loggerHandler.error(`Access error`, {err, req});
+  res.status(500).send({error: err?.message || `no message`});
+});
+
 app.use(router);
 
 const listen = () => {
