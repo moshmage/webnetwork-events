@@ -19,7 +19,11 @@ const corsOptions: CorsOptions = {
 app.use(express.json());
 
 app.use(cors(corsOptions));
+app.options("*", cors(corsOptions));
+
 app.use(router);
+
+
 
 const listen = () => {
   loggerHandler.warn(`API Listening on ${port} over HTTP${process.env.SSL_ENABLED ? "S" : ""}`);
