@@ -73,6 +73,9 @@ export async function action(query?: EventsQuery): Promise<EventsProcessed> {
 
       eventsProcessed[network.name] = {...eventsProcessed[network.name], [dbBounty.issueId!.toString()]: {bounty: dbBounty, eventBlock: block}};
     }
+
+    await _service.processEvents(processor)
+
   } catch (err) {
     logger.error(`Error ${name}:`, err);
   }
