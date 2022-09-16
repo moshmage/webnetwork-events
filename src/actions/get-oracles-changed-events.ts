@@ -42,8 +42,7 @@ export async function action(query?: EventsQuery): Promise<EventsProcessed> {
 
       await dbNetwork.save();
 
-      eventsProcessed[network.name] =
-        [...eventsProcessed[network.name] as string[], ...dbNetwork.councilMembers || []];
+      eventsProcessed[network.name] = dbNetwork.councilMembers || [];
     }
 
     await service.processEvents(processor);
