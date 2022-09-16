@@ -22,21 +22,16 @@ interface TwitterProps {
 
 function handleState(currentState: string) {
   switch (currentState) {
-    case "draft": {
+    case "draft":
       return "𝗗𝗥𝗔𝗙𝗧";
-    }
-    case "open": {
+    case "open":
       return "𝗢𝗣𝗘𝗡";
-    }
-    case "ready": {
+    case "ready":
       return "𝐑𝐄𝐀𝐃𝐘";
-    }
-    case "closed": {
+    case "closed":
       return "𝐂𝐋𝐎𝐒𝐄𝐃";
-    }
-    case "canceled": {
+    case "canceled":
       return "𝗖𝗔𝗡𝗖𝗘𝗟𝗘𝗗";
-    }
     default: {
       return currentState.toUpperCase();
     }
@@ -86,17 +81,8 @@ export const mainNetworks = ["bepro", "taikai"];
 process.env.NETWORK_NAME &&
   mainNetworks.push(process.env.NETWORK_NAME.toLowerCase());
 
-export async function dispatchTweets(
-  bounties: BountiesProcessed,
-  entity: string,
-  event: string,
-  networkName: string
-) {
-  if (
-    !bounties ||
-    !mainNetworks.includes(networkName.toLocaleLowerCase()) ||
-    !events?.[entity]?.[event]
-  )
+export async function dispatchTweets(bounties: BountiesProcessed, entity: string, event: string, networkName: string) {
+  if (!bounties || !mainNetworks.includes(networkName.toLocaleLowerCase()) || !events?.[entity]?.[event])
     return;
 
   return await Promise.all(
@@ -112,21 +98,13 @@ export async function dispatchTweets(
       )
   ).catch(console.error);
 }
-export default async function twitterTweet({
-  entity,
-  event,
-  bountyId,
-  networkName,
-}: TwitterProps) {
-  if (
-    !bountyId ||
-    !mainNetworks.includes(networkName.toLocaleLowerCase()) ||
-    !events?.[entity]?.[event]
-  )
+
+export default async function twitterTweet({entity, event, bountyId, networkName,}: TwitterProps) {
+  if (!bountyId || !mainNetworks.includes(networkName.toLocaleLowerCase()) || !events?.[entity]?.[event])
     return;
 
   if ([appKey, appSecret, accessToken, accessSecret].some((v) => !v))
-    return console.log("Missing Twitter API credentials");
+    return loggerHandler.warn("Missing Twitter API credentials");
 
   const bounty = await db.issues.findOne({
     where: { issueId: bountyId },
@@ -135,17 +113,11 @@ export default async function twitterTweet({
 
   if (!bounty) return;
 
-  const twitterClient = new TwitterApi({
-    appKey,
-    appSecret,
-    accessToken,
-    accessSecret,
-  } as TwitterApiTokens);
+  const twitterClient = new TwitterApi({appKey, appSecret, accessToken, accessSecret,} as TwitterApiTokens);
 
   bounty?.state && (bounty.state = handleState(bounty.state));
-  bounty?.title && bounty?.title.length > 30
-    ? bounty?.title.slice(0, 30) + "..."
-    : bounty?.title;
+  if (bounty.title && bounty.title.length > 29)
+    bounty.title = bounty.title.slice(0, 29).concat(`...`);
 
   bounty?.amount && formatNumberToNScale(bounty?.amount);
 
@@ -154,32 +126,26 @@ export default async function twitterTweet({
 
   if (!title || !body) return;
 
-  const Tweet = `
-  ♾ Protocol Bounty ${title + "!"}
-
-  ${body}
- 
-  ${webAppUrl}/bounty?id=${bounty.githubId}&repoId=${bounty.repository_id}
-  `;
+  const Tweet = [
+    `♾ Protocol Bounty ${title}!`,
+    ``,
+    body,
+    ``,
+    `${webAppUrl}/bounty?id=${bounty.githubId}&repoId=${bounty.repository_id}`
+  ].join(`\n`)
 
   if (Tweet.length < 280 && title && body) {
     return await twitterClient.v2
       .tweet(Tweet)
       .then((value) => {
-        loggerHandler.log(
-          "Tweet created successfully - tweet ID:",
-          value.data.id
-        );
+        loggerHandler.info("Tweet created successfully - tweet ID:", value.data.id);
         return value;
       })
       .catch((err) => {
-        loggerHandler.error("Error creating Tweet ->", err);
+        loggerHandler.error("Error creating Tweet", err);
       });
   } else {
-    loggerHandler.error(
-      "This Tweet cannot be created. Because it contains more than 280 characters"
-    );
-
+    loggerHandler.error("This Tweet cannot be created. Because it contains more than 280 characters", Tweet);
     return;
   }
 }
