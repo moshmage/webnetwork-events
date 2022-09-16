@@ -8,8 +8,9 @@ import loggerHandler from "./utils/logger-handler";
 dotenv.config();
 
 const app: Express = express();
-const port = process.env.WEB_EVENTS_PORT || 3334;
 const useSSL = process.env.SSL_ENABLED === "true";
+
+const port = process.env.WEB_EVENTS_PORT || useSSL ? 443 : 80;
 
 const corsOptions: CorsOptions = {
   origin: process.env.WEBAPP_URL || "http://localhost:3334",
