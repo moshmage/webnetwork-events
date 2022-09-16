@@ -1,4 +1,4 @@
-import cors from "cors";
+import cors, {CorsOptions} from "cors";
 import dotenv from "dotenv";
 import express, { Express } from "express";
 import { readFileSync } from "fs";
@@ -9,9 +9,10 @@ dotenv.config();
 const app: Express = express();
 const port = process.env.WEB_EVENTS_PORT || 3334;
 
-var corsOptions = {
+var corsOptions: CorsOptions = {
   origin: process.env.WEBAPP_URL || "http://localhost:3334",
   optionsSuccessStatus: 200,
+  methods: ["GET", "HEAD", "PUT", "PATCH", "POST", "DELETE"]
 };
 
 app.use(express.json());
