@@ -60,7 +60,7 @@ export async function action(query?: EventsQuery): Promise<EventsProcessed> {
             })
         )
 
-      eventsProcessed[network.name] = [...eventsProcessed[network.name] as string[], ...result.map(n => n.toString())];
+      eventsProcessed[network.name] = result.map(n => n.toString());
     }
 
     await service.processEvents(processor);
