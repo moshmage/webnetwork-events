@@ -2,7 +2,7 @@ import { NetworkRegistry, Network_v2, Web3Connection } from "@taikai/dappkit";
 import "dotenv/config";
 import logger from "src/utils/logger-handler";
 
-const { CHAIN_RPC: web3Host, CHAIN_PRIVATE_KEY: privateKey } = process.env;
+const { NEXT_PUBLIC_WEB3_CONNECTION: web3Host, DEPLOY_PRIVATE_KEY: privateKey } = process.env;
 
 export default class NetworkService {
   private _web3Connection: Web3Connection;
