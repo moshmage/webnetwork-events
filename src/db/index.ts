@@ -3,13 +3,13 @@ import { Sequelize, Dialect } from "sequelize";
 import { initModels } from "./models/init-models";
 
 const {
-  DB_DATABASE: database,
-  DB_HOST: host,
-  DB_PASSWORD: password,
-  DB_PORT: port,
-  DB_USERNAME: username,
-  DB_DIALECT: dialect,
-  DB_LOG,
+  NEXT_DB_DATABASE: database,
+  NEXT_DB_HOST: host,
+  NEXT_DB_PASSWORD: password,
+  NEXT_DB_PORT: port,
+  NEXT_DB_USERNAME: username,
+  NEXT_DB_DIALECT: dialect,
+  NEXT_DB_LOG,
 } = process.env;
 
 if ([database, host, password, port, username].some((v) => !v))
@@ -23,7 +23,7 @@ const options = {
   dialect: (dialect as Dialect) || "postgres",
   host: host || "localhost",
   port: +(port || 54320),
-  logging: !DB_LOG ? false : console.log
+  logging: !NEXT_DB_LOG ? false : console.log
 };
 
 const con = new Sequelize(
