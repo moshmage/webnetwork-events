@@ -33,7 +33,7 @@ export async function action(
 
       const {proposal, dbBounty, dbUser, dbPullRequest} = values;
 
-      const dbIssue = await db.issues.findOne({where: {issueId: bounty.cid}});
+      const dbIssue = await db.issues.findOne({where: {issueId: bounty.cid, network_id: network.id}});
       if (!dbIssue)
         return logger.warn(`${name} Issue ${bounty.cid} not found`);
 
