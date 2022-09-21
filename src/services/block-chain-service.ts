@@ -137,8 +137,8 @@ export default class BlockChainService {
         await this.getChainValues();
 
       let start = +lastBlock;
-      let end = +lastBlock;
-
+      let end = +currentBlock;
+      let cursor = start;
       logger.info(`Fetching`, {start, end, event: this._eventName, network: network?.networkAddress, registry: fromRegistry && _registryAddress})
 
       const eventsFinder = fromRegistry
@@ -146,7 +146,7 @@ export default class BlockChainService {
         : this.networkService.network;
 
       for (let page = 0; page < totalPages; page++) {
-        const cursor = start + blocksPerPages;
+        cursor = cursor + blocksPerPages;
 
         end = cursor > currentBlock ? currentBlock : cursor;
 
