@@ -150,14 +150,14 @@ export default class BlockChainService {
 
         end = cursor > currentBlock ? currentBlock : cursor;
 
-        logger.info(`${this._eventName} Fetching `, {start, end});
+        logger.info(`${this._eventName} Fetching `, {cursor, end});
 
         const eventsBlock = await eventsFinder[this._eventName]({
           fromBlock: start,
           toBlock: end,
         });
 
-        logger.info(`${this._eventName} Got`, {eventsBlock})
+        logger.info(`${this._eventName} Got ${eventsBlock.length} events`)
 
         if (eventsBlock.length) {
           event.eventsOnBlock = eventsBlock;
