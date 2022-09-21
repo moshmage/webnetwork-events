@@ -42,7 +42,7 @@ export class EventService {
         loggerHandler.info(`${this.name} Parsed ${network.networkAddress}`);
       }
 
-      if (!this.query)
+      if (!this.query || !this.query?.networkName)
         await this.chainService.saveLastBlock()
 
       loggerHandler.info(`${this.name} finished`);
