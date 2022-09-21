@@ -33,7 +33,11 @@ export async function action(
 
       const {proposal, dbBounty, dbUser, dbPullRequest} = values;
 
-      const dbProposal = await db.merge_proposals.findOne({where: {scMergeId: proposal.id.toString()}});
+      const dbIssue = await db.issues.findOne({where: {issueId: bounty.cid}});
+      if (!dbIssue)
+        return logger.warn(`${name} Issue ${bounty.cid} not found`);
+
+      const dbProposal = await db.merge_proposals.findOne({where: {scMergeId: proposal.id.toString(), issueId: dbIssue?.id}});
       if (dbProposal)
         return logger.warn(`${name} Proposal with id ${proposalId} was already parsed`);
 
