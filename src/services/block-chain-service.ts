@@ -108,6 +108,7 @@ export default class BlockChainService {
   private async _getAllEvents(fromRegistry?: boolean): Promise<EventsPerNetwork[]> {
     const allEvents: EventsPerNetwork[] = [];
     const networks = await this._loadAllNetworks();
+    let _registryAddress;
 
     for (const network of networks) {
       const event: EventsPerNetwork = {
@@ -117,17 +118,18 @@ export default class BlockChainService {
 
       if (!fromRegistry) {
         if (!(await this.networkService.loadNetwork(network.networkAddress))) {
-          logger.error(`Error loading network contract ${network.name}`);
+          logger.error(`${this._eventName} Error loading network contract ${network.name}`);
           continue;
         }
       } else {
         const registryAddress = await this.getRegistryAddress();
+        _registryAddress = registryAddress;
 
         if (!registryAddress)
-          throw Error("Missing network registry address");
+          throw Error(`${this._eventName} Missing network registry address`);
 
         if (!(await this.networkService.loadRegistry(registryAddress)))
-          throw Error(`Error loading network registry contract ${registryAddress}`);
+          throw Error(`${this._eventName} Error loading network registry contract ${registryAddress}`);
 
       }
 
@@ -136,6 +138,8 @@ export default class BlockChainService {
 
       let start = +lastBlock;
       let end = +lastBlock;
+
+      logger.info(`Fetching`, {start, end, event: this._eventName, network: network?.networkAddress, registry: fromRegistry && _registryAddress})
 
       const eventsFinder = fromRegistry
         ? this.networkService.registry
@@ -146,10 +150,14 @@ export default class BlockChainService {
 
         end = cursor > currentBlock ? currentBlock : cursor;
 
+        logger.info(`${this._eventName} Fetching `, {start, end});
+
         const eventsBlock = await eventsFinder[this._eventName]({
           fromBlock: start,
           toBlock: end,
         });
+
+        logger.info(`${this._eventName} Got`, {eventsBlock})
 
         if (eventsBlock.length) {
           event.eventsOnBlock = eventsBlock;
@@ -192,6 +200,7 @@ export default class BlockChainService {
       registry: {},
       eventsOnBlock: [],
     };
+    let _registryAddress;
 
     const network = await this._getNetwork(networkName);
 
@@ -199,20 +208,20 @@ export default class BlockChainService {
 
     if (!fromRegistry) {
       if (!(await this.networkService.loadNetwork(network.networkAddress)))
-        throw Error(`Error loading network contract ${network.name}`);
+        throw Error(`${this._eventName} Error loading network contract ${network.name}`);
 
     } else {
       const registryAddress = await this.getRegistryAddress();
-
+      _registryAddress = registryAddress;
       if (!registryAddress)
-        throw Error("Missing network registry address");
+        throw Error(`${this._eventName} Missing network registry address`);
 
       const registry = await this.networkService.loadRegistry(registryAddress);
 
       networkEvent.registry = registry;
 
       if (!registry)
-        throw Error(`Error loading network registry contract ${registryAddress}`);
+        throw Error(`${this._eventName} Error loading network registry contract ${registryAddress}`);
 
     }
 
@@ -222,6 +231,8 @@ export default class BlockChainService {
         ? toBlock - 1
         : +blockQuery.from
       : toBlock - 1;
+
+    logger.info(`Fetching`, {start: fromBlock, end: toBlock, event: this._eventName, network: network?.networkAddress, registry: fromRegistry && _registryAddress})
 
     const eventsFinder = fromRegistry
       ? this.networkService.registry
