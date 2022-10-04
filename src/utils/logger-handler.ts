@@ -27,7 +27,9 @@ const output = (level, message, rest) => { // eslint-disable-line
   if (node && username && password) {
     const client = new Client({node, auth: {username, password} })
 
-    client?.index({ index: "web-network-events", document: {level, timestamp: new Date(), message, rest: _rest}})
+    client?.index({
+        index: "web-network-events",
+        document: {level, timestamp: new Date(), message, rest: _rest, webAppUrl: process.env.WEBAPP_URL}})
       .catch(e => console.log(e))
   }
 }
