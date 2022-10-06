@@ -5,9 +5,9 @@ enum DebugLevel { none, error, warn, info, log};
 const Levels = { log: "log", info: "info", error: "error", warn: "warn" };
 
 const {
-  NEXT_ELASTIC_SEARCH_URL: node,
-  NEXT_ELASTIC_SEARCH_USERNAME: username,
-  NEXT_ELASTIC_SEARCH_PASSWORD: password,
+  ELASTIC_SEARCH_URL: node,
+  ELASTIC_SEARCH_USERNAME: username,
+  ELASTIC_SEARCH_PASSWORD: password,
 } = process.env;
 
 const LOG_LEVEL = process.env.LOG_LEVEL ? parseInt(process.env.LOG_LEVEL, 10) : DebugLevel.log;
