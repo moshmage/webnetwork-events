@@ -85,9 +85,11 @@ export class EventService<E = any> {
 
     let lastReadBlock = await db.chain_events.findOne({where: {name: this.name}});
     if (!lastReadBlock) {
-      loggerHandler.warn(`${this.name} had no entry on chain_events, created`);
-      await db.chain_events.create({name: this.name, lastBlock: 0});
+
+      const lastBlock = +(process.env.BULK_CHAIN_START_BLOCK || await this.web3Connection.eth.getBlockNumber());
+      await db.chain_events.create({name: this.name, lastBlock: +(process.env.BULK_CHAIN_START_BLOCK || await this.web3Connection.eth.getBlockNumber())});
       lastReadBlock = await db.chain_events.findOne({where: {name: this.name}});
+      loggerHandler.warn(`${this.name} had no entry on chain_events, created with blockNumber: ${lastBlock}`);
     }
 
     if (this.fromRegistry)
