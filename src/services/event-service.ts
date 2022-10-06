@@ -124,7 +124,7 @@ export class EventService<E = any> {
     for (let fromBlock = startBlock; fromBlock < endBlock; fromBlock += perRequest) {
       toBlock = fromBlock + perRequest > endBlock ? endBlock : fromBlock + perRequest;
 
-      loggerHandler.log(`${this.name} Fetching events from ${fromBlock} to ${toBlock}`);
+      loggerHandler.log(`${this.name} Fetching events from ${fromBlock} to ${toBlock}`, {topics,});
 
       events.push(...await eth.getPastLogs({fromBlock, toBlock, topics}));
 
