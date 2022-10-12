@@ -164,8 +164,8 @@ export class EventService<E = any> {
 
       loggerHandler.info(`${this.name} finished`);
 
-    } catch (e) {
-      loggerHandler.error(`${this.name}`, e);
+    } catch (e: any) {
+      loggerHandler.error(`${this.name}`, {error: e?.toString()});
     }
   }
 
