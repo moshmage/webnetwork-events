@@ -7,7 +7,7 @@ import {Op} from "sequelize";
 
 async function bountyReadyPRsHasNoInvalidProposals(networkBounty: any,
                                                    networkService: Network_v2): Promise<number> {
-  const readyPRsIds = networkBounty.pullRequests.filter((pr) => pr.ready).map((pr) => pr.id);
+  const readyPRsIds = networkBounty.pullRequests.filter((pr) => pr.ready && !pr.canceled).map((pr) => pr.id);
 
   if (!readyPRsIds.length)
     return 0;
@@ -47,7 +47,7 @@ export default async function validateProposalState(currentState: string,
         return -1;
       });
 
-  return [0,1].includes(validation) ? "open" : 3 === validation ? "ready" : currentState;
+  return 0 === validation ? "open" : [1, 3].includes(validation) ? "ready" : currentState;
 }
 
 export async function validateProposal(bounty: Bounty, prId: number, proposalId: number, network_id: number, isProposalRequired = true) {
