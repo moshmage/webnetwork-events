@@ -115,7 +115,7 @@ export class EventService<E = any> {
     const topics = [eth.abi.encodeEventSignature(event)];
     const events: Log[] = [];
     const perRequest = +(process.env.EVENTS_PER_REQUEST || 1500);
-    const networkMap = allNetworks.reduce((prev, curr) => prev = {...prev, [curr.networkAddress!]: curr}, {});
+    const networkMap = allNetworks.reduce((prev, curr) => ({...prev, [curr.networkAddress!]: curr}), {});
     const requests = (endBlock - startBlock) / perRequest;
 
     loggerHandler.log(`${this.name} Reading from ${startBlock} to ${endBlock}; Will total ${requests < 1 ? 1 : Math.round(requests)} requests`);
@@ -165,7 +165,7 @@ export class EventService<E = any> {
       loggerHandler.info(`${this.name} finished`);
 
     } catch (e: any) {
-      loggerHandler.error(`${this.name}`, {error: e?.toString()});
+      loggerHandler.error(`${this.name} Error`, {error: e?.toString()});
     }
   }
 
