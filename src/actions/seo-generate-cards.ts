@@ -67,13 +67,13 @@ export async function action(issueId?: string) {
         bountiesProcessed.push({ issueId: bounty.issueId, hash });
 
         logger.info(`${name} Bounty card for ${bounty.issueId} has been updated`);
-      } catch (error) {
-        logger.error(`${name} Error generating card for ${bounty.issueId}:`, error);
+      } catch (error: any) {
+        logger.error(`${name} Error generating card for ${bounty.issueId}:`, error.toString());
         continue;
       }
     }
-  } catch (err) {
-    logger.error(`${name} Error`, err);
+  } catch (err: any) {
+    logger.error(`${name} Error`, err?.message || err.toString());
   }
 
   return bountiesProcessed;
