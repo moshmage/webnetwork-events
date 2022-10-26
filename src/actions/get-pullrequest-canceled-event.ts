@@ -17,7 +17,7 @@ export const author = "clarkjoao";
 
 async function closePullRequest(bounty: Bounty, pullRequest: PullRequest) {
   const [owner, repo] = slashSplit(bounty?.repository?.githubPath as string);
-  await GHService.pullrequestClose(repo, owner, pullRequest?.githubId as string);
+  await GHService.pullrequestClose(owner, repo, pullRequest?.githubId as string);
 
   const body = `This pull request was closed ${pullRequest?.githubLogin ? `by @${pullRequest.githubLogin}` : ""}`;
   await GHService.createCommentOnIssue(repo, owner, bounty?.githubId as string, body);
@@ -53,8 +53,12 @@ export async function action(query?: EventsQuery): Promise<EventsProcessed> {
     dbPullRequest.status = "canceled";
     await dbPullRequest.save();
 
-    if (bounty.pullRequests.some(({ready, canceled}) => ready && !canceled)) {
-      dbBounty.state = "open";
+    if (!["canceled", "closed", "proposal"].includes(dbBounty.state!)) {
+      if (bounty.pullRequests.some(({ready, canceled}) => ready && !canceled))
+        dbBounty.state = "ready";
+      else
+        dbBounty.state = "open";
+
       await dbBounty.save();
     }
 
