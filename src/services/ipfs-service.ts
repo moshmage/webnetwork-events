@@ -8,7 +8,7 @@ import loggerHandler from "../utils/logger-handler";
 const {
   IPFS_PROJECT_ID: id,
   IPFS_PROJECT_SECRET: secret,
-  IPFS_BASE: baseURL,
+  IPFS_UPLOAD_ENDPOINT: baseURL,
 } = process.env;
 
 const auth = "Basic " + Buffer.from(id + ":" + secret).toString("base64");
