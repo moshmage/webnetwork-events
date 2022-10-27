@@ -1,20 +1,20 @@
+import { Op } from "sequelize";
 import db from "src/db";
+import generateCard from "src/modules/generate-bounty-cards";
 import ipfsService from "src/services/ipfs-service";
 import logger from "src/utils/logger-handler";
-import generateCard from "src/modules/generate-bounty-cards";
-import { Op } from "sequelize";
 
 export const name = "seo-generate-cards";
 export const schedule = "*/10 * * * *";
 export const description = "Try generate SeoCards for all updated or new bounties";
 export const author = "clarkjoao";
 
-const {IPFS_PROJECT_ID, IPFS_PROJECT_SECRET, IPFS_BASE} = process.env;
+const {IPFS_PROJECT_ID, IPFS_PROJECT_SECRET, IPFS_UPLOAD_ENDPOINT} = process.env;
 
 export async function action(issueId?: string) {
   const bountiesProcessed: any[] = [];
 
-  if ([IPFS_PROJECT_ID, IPFS_PROJECT_SECRET, IPFS_BASE].some(v => !v)) {
+  if ([IPFS_PROJECT_ID, IPFS_PROJECT_SECRET, IPFS_UPLOAD_ENDPOINT].some(v => !v)) {
     logger.warn(`${name} Missing id, secret or baseURL, for IPFService`);
     return bountiesProcessed;
   }
@@ -23,9 +23,11 @@ export async function action(issueId?: string) {
     logger.info(`${name} start`);
 
     const dbEvent = await db.chain_events.findOne({where: {name}});
-    if (!dbEvent)
+    if (!dbEvent){
       logger.warn(`${name} not found on database`);
-
+      await db.chain_events.create({name});
+    }
+      
     const where = {
       ...(issueId
         ? {issueId}
@@ -72,7 +74,13 @@ export async function action(issueId?: string) {
         continue;
       }
     }
-  } catch (err: any) {
+
+    if(dbEvent?.lastBlock){
+      dbEvent.lastBlock += 1;
+      await dbEvent.save();
+    }
+
+  } catch (err) {
     logger.error(`${name} Error`, err?.message || err.toString());
   }
 
