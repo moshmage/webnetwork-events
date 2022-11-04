@@ -1,7 +1,11 @@
 import fs from "fs";
 import nodeHtmlToImage from "node-html-to-image";
 import path from "path";
+import BigNumber from "bignumber.js";
+import { formatNumberToNScale } from "src/utils/formatNumber";
 import { slashSplit } from "src/utils/string";
+
+export const lessThenWei = (number: number | string) => number!== 0 && BigNumber(number).isLessThan(0.0001) ? '< 0.0001' : number;
 
 function image2base64(imagePathName: string) {
   return new Promise((resolve) => {
@@ -42,7 +46,10 @@ export default async function generateBountyCards(issue) {
     state: issue?.state,
     title: issue?.title,
     repository: slashSplit(issue?.repository?.githubPath)[1] || "",
-    amount: new Intl.NumberFormat("en").format(issue?.amount || 0),
+    amount: lessThenWei(formatNumberToNScale(+BigNumber(issue?.amount))|| 0),
+    fundingAmount: lessThenWei(formatNumberToNScale(+BigNumber(issue?.fundingAmount)) || 0),
+    fundedAmount: lessThenWei(formatNumberToNScale(+BigNumber(issue?.fundedAmount)) || 0),
+    isFudingBounty: BigNumber(issue?.fundingAmount).gt(0),
     working: issue?.working?.length || 0,
     proposals: issue?.merge_proposals?.length || 0,
     pullRequests: issue?.pull_requests?.length || 0,
