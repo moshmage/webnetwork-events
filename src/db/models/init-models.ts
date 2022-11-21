@@ -27,6 +27,10 @@ import { users as _users } from "./users";
 import type { usersAttributes, usersCreationAttributes } from "./users";
 import { users_payments as _users_payments } from "./users_payments";
 import type { users_paymentsAttributes, users_paymentsCreationAttributes } from "./users_payments";
+import { curators as _curators } from "./curators";
+import type { curatorAttributes, curatorCreationAttributes } from "./curators";
+import { disputes as _disputes } from "./disputes";
+import type { disputeAttributes, disputeCreationAttributes } from "./disputes";
 
 export {
   _SequelizeMeta as SequelizeMeta,
@@ -43,6 +47,8 @@ export {
   _tokens as tokens,
   _users as users,
   _users_payments as users_payments,
+  _curators as curators,
+  _disputes as disputes
 };
 
 export type {
@@ -74,6 +80,10 @@ export type {
   usersCreationAttributes,
   users_paymentsAttributes,
   users_paymentsCreationAttributes,
+  curatorAttributes,
+  curatorCreationAttributes,
+  disputeAttributes,
+  disputeCreationAttributes
 };
 
 export function initModels(sequelize: Sequelize) {
@@ -91,6 +101,8 @@ export function initModels(sequelize: Sequelize) {
   const tokens = _tokens.initModel(sequelize);
   const users = _users.initModel(sequelize);
   const users_payments = _users_payments.initModel(sequelize);
+  const curators = _curators.initModel(sequelize);
+  const disputes = _disputes.initModel(sequelize);
 
   benefactors.belongsTo(issues, { as: "issue", foreignKey: "issueId"});
   issues.hasMany(benefactors, { as: "benefactors", foreignKey: "issueId"});
@@ -120,6 +132,9 @@ export function initModels(sequelize: Sequelize) {
   tokens.hasMany(issues, { as: "issues", foreignKey: "tokenId"});
   network_tokens.belongsTo(tokens, { as: "token", foreignKey: "tokenId"});
   tokens.hasMany(network_tokens, { as: "network_tokens", foreignKey: "tokenId"});
+  curators.belongsTo(networks, { as: "network", foreignKey: "networkId"});
+  disputes.belongsTo(issues, { as: "issue", foreignKey: "issueId"});
+  disputes.belongsTo(merge_proposals, { as: "merge_proposals", foreignKey: "proposalId"});
 
   return {
     SequelizeMeta: SequelizeMeta,
@@ -136,5 +151,7 @@ export function initModels(sequelize: Sequelize) {
     tokens: tokens,
     users: users,
     users_payments: users_payments,
+    curators: curators,
+    disputes: disputes
   };
 }
