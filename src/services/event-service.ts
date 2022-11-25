@@ -8,7 +8,7 @@ import {Log} from "web3-core";
 import {networksAttributes} from "../db/models/networks";
 import {EventNameActionsMap} from "../utils/event-name-actions-map";
 
-const {NEXT_PUBLIC_WEB3_CONNECTION: web3Host, NEXT_WALLET_PRIVATE_KEY: privateKey,} = process.env;
+const {PUBLIC_WEB3_CONNECTION: web3Host, WALLET_PRIVATE_KEY: privateKey,} = process.env;
 
 type EventsPerNetwork<T = any> = {[networkAddress: string]: {info: networksAttributes, returnValues: T[]}}
 
@@ -47,6 +47,13 @@ export class EventService<E = any> {
     return allNetworks;
   }
 
+  async getRegistryAddress() {
+    return db.settings.findOne({
+      where: { visibility: "public", group: "contracts", key: "networkRegistry" },
+      raw: true,
+    });
+  }
+
   async saveLastFromBlock() {
     const dbEvent = await db.chain_events.findOne({where: {name: this.name}});
     if (!this.#lastFromBlock) {
@@ -70,7 +77,9 @@ export class EventService<E = any> {
     this.web3Connection.start();
 
     const allNetworks = await this.getAllNetworks();
-    if (!allNetworks.length)
+    const registryAddress = this.fromRegistry ? await this.getRegistryAddress() : undefined;
+
+    if (!allNetworks.length && !this.fromRegistry)
       return {};
 
     if (this.query?.networkName) {
@@ -142,7 +151,7 @@ export class EventService<E = any> {
       return ({...previous, [address]: {...previous[address], returnValues: [...previous[address].returnValues, rest]}})
     }
 
-    const eventsToParse = this.fromRegistry ? events : events.filter(({address}) => networkMap[address]);
+    const eventsToParse = events.filter(({address}) => this.fromRegistry ? address === registryAddress?.value : networkMap[address]);
 
     loggerHandler.log(`${this.name} Got ${eventsToParse.length} events with matching topics`);
 
