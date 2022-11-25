@@ -31,6 +31,8 @@ import { curators as _curators } from "./curators";
 import type { curatorAttributes, curatorCreationAttributes } from "./curators";
 import { disputes as _disputes } from "./disputes";
 import type { disputeAttributes, disputeCreationAttributes } from "./disputes";
+import { benefactors as _benefactors } from "./benefactor";
+import type { benefactorAttributes, benefactorCreationAttributes } from "./benefactor";
 
 export {
   _SequelizeMeta as SequelizeMeta,
@@ -48,7 +50,8 @@ export {
   _users as users,
   _users_payments as users_payments,
   _curators as curators,
-  _disputes as disputes
+  _disputes as disputes,
+  _benefactors as benefactors
 };
 
 export type {
@@ -84,6 +87,8 @@ export type {
   curatorCreationAttributes,
   disputeAttributes,
   disputeCreationAttributes
+  benefactorAttributes,
+  benefactorCreationAttributes
 };
 
 export function initModels(sequelize: Sequelize) {
@@ -103,6 +108,7 @@ export function initModels(sequelize: Sequelize) {
   const users_payments = _users_payments.initModel(sequelize);
   const curators = _curators.initModel(sequelize);
   const disputes = _disputes.initModel(sequelize);
+  const benefactors = _benefactors.initModel(sequelize);
 
   benefactors.belongsTo(issues, { as: "issue", foreignKey: "issueId"});
   issues.hasMany(benefactors, { as: "benefactors", foreignKey: "issueId"});
@@ -114,6 +120,7 @@ export function initModels(sequelize: Sequelize) {
   issues.hasMany(pull_requests, { as: "pull_requests", foreignKey: "issueId"});
   users_payments.belongsTo(issues, { as: "issue", foreignKey: "issueId"});
   issues.hasMany(users_payments, { as: "users_payments", foreignKey: "issueId"});
+  issues.hasMany(benefactors, { as: "benefactors", foreignKey: "issueId"});
   issues.belongsTo(networks, { as: "network", foreignKey: "network_id"});
   networks.hasMany(issues, { as: "issues", foreignKey: "network_id"});
   merge_proposals.belongsTo(networks, { as: "network", foreignKey: "network_id"});
@@ -152,6 +159,7 @@ export function initModels(sequelize: Sequelize) {
     users: users,
     users_payments: users_payments,
     curators: curators,
-    disputes: disputes
+    disputes: disputes,
+    benefactors: benefactors
   };
 }

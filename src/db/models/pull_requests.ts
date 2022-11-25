@@ -14,6 +14,7 @@ export interface pull_requestsAttributes {
   reviewers?: string[];
   userRepo?: string;
   userBranch?: string;
+  userAddress?: string;
   status?: string;
   contractId?: number;
   userAddress?: string;
@@ -35,6 +36,7 @@ export class pull_requests extends Model<pull_requestsAttributes, pull_requestsC
   reviewers?: string[];
   userRepo?: string;
   userBranch?: string;
+  userAddress?: string;
   status?: string;
   contractId?: number;
   userAddress?: string;
@@ -97,6 +99,10 @@ export class pull_requests extends Model<pull_requestsAttributes, pull_requestsC
       allowNull: true
     },
     userBranch: {
+      type: DataTypes.STRING(255),
+      allowNull: true
+    },
+    userAddress: {
       type: DataTypes.STRING(255),
       allowNull: true
     },
