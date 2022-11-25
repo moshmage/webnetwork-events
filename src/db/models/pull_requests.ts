@@ -1,8 +1,8 @@
 import * as Sequelize from 'sequelize';
-import { DataTypes, Model, Optional } from 'sequelize';
-import type { issues, issuesId } from './issues';
-import type { merge_proposals, merge_proposalsId } from './merge_proposals';
-import type { networks, networksId } from './networks';
+import {DataTypes, Model, Optional} from 'sequelize';
+import type {issues, issuesId} from './issues';
+import type {merge_proposals, merge_proposalsId} from './merge_proposals';
+import type {networks, networksId} from './networks';
 
 export interface pull_requestsAttributes {
   id: number;
@@ -17,7 +17,6 @@ export interface pull_requestsAttributes {
   userAddress?: string;
   status?: string;
   contractId?: number;
-  userAddress?: string;
   network_id?: number;
 }
 
@@ -39,7 +38,6 @@ export class pull_requests extends Model<pull_requestsAttributes, pull_requestsC
   userAddress?: string;
   status?: string;
   contractId?: number;
-  userAddress?: string;
   network_id?: number;
 
   // pull_requests belongsTo issues via issueId
@@ -99,10 +97,6 @@ export class pull_requests extends Model<pull_requestsAttributes, pull_requestsC
       allowNull: true
     },
     userBranch: {
-      type: DataTypes.STRING(255),
-      allowNull: true
-    },
-    userAddress: {
       type: DataTypes.STRING(255),
       allowNull: true
     },

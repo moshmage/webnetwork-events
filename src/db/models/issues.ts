@@ -1,14 +1,14 @@
 import * as Sequelize from 'sequelize';
-import { DataTypes, Model, Optional } from 'sequelize';
-import type { benefactors, benefactorsId } from './benefactors';
-import type { developers, developersId } from './developers';
-import type { merge_proposals, merge_proposalsId } from './merge_proposals';
-import type { networks, networksId } from './networks';
-import type { pull_requests, pull_requestsId } from './pull_requests';
-import type { repositories, repositoriesId } from './repositories';
-import { benefactorId, benefactors } from './benefactor';
-import type { tokens, tokensId } from './tokens';
-import type { users_payments, users_paymentsId } from './users_payments';
+import {DataTypes, Model, Optional} from 'sequelize';
+import type {benefactors, benefactorsId} from './benefactors';
+import type {developers, developersId} from './developers';
+import type {merge_proposals, merge_proposalsId} from './merge_proposals';
+import type {networks, networksId} from './networks';
+import type {pull_requests, pull_requestsId} from './pull_requests';
+import type {repositories, repositoriesId} from './repositories';
+import type {tokens, tokensId} from './tokens';
+import type {users_payments, users_paymentsId} from './users_payments';
+import {benefactorId} from "./benefactor";
 
 export interface issuesAttributes {
   id: number;
@@ -113,7 +113,6 @@ export class issues extends Model<issuesAttributes, issuesCreationAttributes> im
   hasPull_requests!: Sequelize.HasManyHasAssociationsMixin<pull_requests, pull_requestsId>;
   countPull_requests!: Sequelize.HasManyCountAssociationsMixin;
   // issues hasMany benefactor via issueId
-  benefactors!: benefactors[];
   getbenefactors!: Sequelize.HasManyGetAssociationsMixin<benefactors>;
   setbenefactors!: Sequelize.HasManySetAssociationsMixin<benefactors, benefactorId>;
   addbenefactor!: Sequelize.HasManyAddAssociationMixin<benefactors, benefactorId>;
