@@ -1,38 +1,37 @@
-import type { Sequelize } from "sequelize";
-import { SequelizeMeta as _SequelizeMeta } from "./SequelizeMeta";
-import type { SequelizeMetaAttributes, SequelizeMetaCreationAttributes } from "./SequelizeMeta";
-import { benefactors as _benefactors } from "./benefactors";
-import type { benefactorsAttributes, benefactorsCreationAttributes } from "./benefactors";
-import { chain_events as _chain_events } from "./chain_events";
-import type { chain_eventsAttributes, chain_eventsCreationAttributes } from "./chain_events";
-import { developers as _developers } from "./developers";
-import type { developersAttributes, developersCreationAttributes } from "./developers";
-import { issues as _issues } from "./issues";
-import type { issuesAttributes, issuesCreationAttributes } from "./issues";
-import { merge_proposals as _merge_proposals } from "./merge_proposals";
-import type { merge_proposalsAttributes, merge_proposalsCreationAttributes } from "./merge_proposals";
-import { network_tokens as _network_tokens } from "./network_tokens";
-import type { network_tokensAttributes, network_tokensCreationAttributes } from "./network_tokens";
-import { networks as _networks } from "./networks";
-import type { networksAttributes, networksCreationAttributes } from "./networks";
-import { pull_requests as _pull_requests } from "./pull_requests";
-import type { pull_requestsAttributes, pull_requestsCreationAttributes } from "./pull_requests";
-import { repositories as _repositories } from "./repositories";
-import type { repositoriesAttributes, repositoriesCreationAttributes } from "./repositories";
-import { settings as _settings } from "./settings";
-import type { settingsAttributes, settingsCreationAttributes } from "./settings";
-import { tokens as _tokens } from "./tokens";
-import type { tokensAttributes, tokensCreationAttributes } from "./tokens";
-import { users as _users } from "./users";
-import type { usersAttributes, usersCreationAttributes } from "./users";
-import { users_payments as _users_payments } from "./users_payments";
-import type { users_paymentsAttributes, users_paymentsCreationAttributes } from "./users_payments";
-import { curators as _curators } from "./curators";
-import type { curatorAttributes, curatorCreationAttributes } from "./curators";
-import { disputes as _disputes } from "./disputes";
-import type { disputeAttributes, disputeCreationAttributes } from "./disputes";
-import { benefactors as _benefactors } from "./benefactor";
-import type { benefactorAttributes, benefactorCreationAttributes } from "./benefactor";
+import type {Sequelize} from "sequelize";
+import type {SequelizeMetaAttributes, SequelizeMetaCreationAttributes} from "./SequelizeMeta";
+import {SequelizeMeta as _SequelizeMeta} from "./SequelizeMeta";
+import type {benefactorsAttributes, benefactorsCreationAttributes} from "./benefactors";
+import {benefactors as _benefactors} from "./benefactors";
+import type {chain_eventsAttributes, chain_eventsCreationAttributes} from "./chain_events";
+import {chain_events as _chain_events} from "./chain_events";
+import type {developersAttributes, developersCreationAttributes} from "./developers";
+import {developers as _developers} from "./developers";
+import type {issuesAttributes, issuesCreationAttributes} from "./issues";
+import {issues as _issues} from "./issues";
+import type {merge_proposalsAttributes, merge_proposalsCreationAttributes} from "./merge_proposals";
+import {merge_proposals as _merge_proposals} from "./merge_proposals";
+import type {network_tokensAttributes, network_tokensCreationAttributes} from "./network_tokens";
+import {network_tokens as _network_tokens} from "./network_tokens";
+import type {networksAttributes, networksCreationAttributes} from "./networks";
+import {networks as _networks} from "./networks";
+import type {pull_requestsAttributes, pull_requestsCreationAttributes} from "./pull_requests";
+import {pull_requests as _pull_requests} from "./pull_requests";
+import type {repositoriesAttributes, repositoriesCreationAttributes} from "./repositories";
+import {repositories as _repositories} from "./repositories";
+import type {settingsAttributes, settingsCreationAttributes} from "./settings";
+import {settings as _settings} from "./settings";
+import type {tokensAttributes, tokensCreationAttributes} from "./tokens";
+import {tokens as _tokens} from "./tokens";
+import type {usersAttributes, usersCreationAttributes} from "./users";
+import {users as _users} from "./users";
+import type {users_paymentsAttributes, users_paymentsCreationAttributes} from "./users_payments";
+import {users_payments as _users_payments} from "./users_payments";
+import type {curatorAttributes, curatorCreationAttributes} from "./curators";
+import {curators as _curators} from "./curators";
+import type {disputeAttributes, disputeCreationAttributes} from "./disputes";
+import {disputes as _disputes} from "./disputes";
+import type {benefactorAttributes, benefactorCreationAttributes} from "./benefactor";
 
 export {
   _SequelizeMeta as SequelizeMeta,
@@ -51,7 +50,6 @@ export {
   _users_payments as users_payments,
   _curators as curators,
   _disputes as disputes,
-  _benefactors as benefactors
 };
 
 export type {
@@ -86,14 +84,13 @@ export type {
   curatorAttributes,
   curatorCreationAttributes,
   disputeAttributes,
-  disputeCreationAttributes
+  disputeCreationAttributes,
   benefactorAttributes,
   benefactorCreationAttributes
 };
 
 export function initModels(sequelize: Sequelize) {
   const SequelizeMeta = _SequelizeMeta.initModel(sequelize);
-  const benefactors = _benefactors.initModel(sequelize);
   const chain_events = _chain_events.initModel(sequelize);
   const developers = _developers.initModel(sequelize);
   const issues = _issues.initModel(sequelize);
@@ -160,6 +157,5 @@ export function initModels(sequelize: Sequelize) {
     users_payments: users_payments,
     curators: curators,
     disputes: disputes,
-    benefactors: benefactors
   };
 }
