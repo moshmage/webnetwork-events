@@ -31,6 +31,8 @@ import { users as _users } from "./users";
 import type { usersAttributes, usersCreationAttributes } from "./users";
 import { users_payments as _users_payments } from "./users_payments";
 import type { users_paymentsAttributes, users_paymentsCreationAttributes } from "./users_payments";
+import { leaderboard as _leaderboard } from "./leaderboard";
+import type { leaderboardAttributes, leaderboardCreationAttributes } from "./leaderboard";
 
 export {
   _SequelizeMeta as SequelizeMeta,
@@ -49,6 +51,7 @@ export {
   _tokens as tokens,
   _users as users,
   _users_payments as users_payments,
+  _leaderboard as leaderboard
 };
 
 export type {
@@ -84,6 +87,8 @@ export type {
   usersCreationAttributes,
   users_paymentsAttributes,
   users_paymentsCreationAttributes,
+  leaderboardAttributes,
+  leaderboardCreationAttributes
 };
 
 export function initModels(sequelize: Sequelize) {
@@ -103,6 +108,8 @@ export function initModels(sequelize: Sequelize) {
   const tokens = _tokens.initModel(sequelize);
   const users = _users.initModel(sequelize);
   const users_payments = _users_payments.initModel(sequelize);
+  const leaderboard = _leaderboard.initModel(sequelize);
+
 
   benefactors.belongsTo(issues, { as: "issue", foreignKey: "issueId"});
   issues.hasMany(benefactors, { as: "benefactors", foreignKey: "issueId"});
@@ -156,5 +163,6 @@ export function initModels(sequelize: Sequelize) {
     tokens: tokens,
     users: users,
     users_payments: users_payments,
+    leaderboard: leaderboard
   };
 }
