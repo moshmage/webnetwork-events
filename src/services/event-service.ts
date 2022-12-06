@@ -21,7 +21,8 @@ export class EventService<E = any> {
               readonly query?: EventsQuery,
               readonly fromRegistry = false,
               readonly web3Connection = new Web3Connection({web3Host, privateKey}),
-              readonly onlyRegisteredNetworks = true) {}
+              readonly onlyRegisteredNetworks = true,
+              readonly customActor: any = null) {}
 
   async loadActorWithAddress(address: string) {
     try {
@@ -73,7 +74,6 @@ export class EventService<E = any> {
   }
 
   async _getEventsOfNetworks(): Promise<EventsPerNetwork> {
-
     this.web3Connection.start();
 
     const allNetworks = await this.getAllNetworks();
@@ -101,10 +101,14 @@ export class EventService<E = any> {
       loggerHandler.warn(`${this.name} had no entry on chain_events, created with blockNumber: ${lastBlock}`);
     }
 
-    if (this.fromRegistry)
-      this.#Actor = new NetworkRegistry(this.web3Connection);
-    else
-      this.#Actor = new Network_v2(this.web3Connection);
+    if (this.customActor) {
+      this.#Actor = new this.customActor(this.web3Connection)
+    } else {
+      if (this.fromRegistry)
+        this.#Actor = new NetworkRegistry(this.web3Connection);
+      else
+        this.#Actor = new Network_v2(this.web3Connection);
+    }
 
     const eventName = EventNameActionsMap[this.name];
     if (!eventName) {
