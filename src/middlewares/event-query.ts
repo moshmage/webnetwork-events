@@ -9,8 +9,8 @@ export default function (req: Request, _: Response, next: NextFunction) {
     req.eventQuery = {
       networkName,
       blockQuery: {
-        from: fromBlock,
-        to: toBlock,
+        from: +fromBlock,
+        to: +toBlock,
       },
     };
   }
