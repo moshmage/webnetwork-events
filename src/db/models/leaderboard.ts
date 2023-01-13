@@ -74,7 +74,7 @@ export class leaderboard extends Model<leaderboardAttributes, leaderboardCreatio
     ownedProposalRejected: {
       type: DataTypes.INTEGER,
       allowNull: true
-    }
+    },
   }, {
     tableName: 'leaderboard',
     schema: 'public',
