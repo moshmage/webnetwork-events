@@ -88,7 +88,7 @@ export async function action(query?: EventsQuery): Promise<EventsProcessed> {
           tokens
             .filter(notOnRegistry)
             .filter(onDatabase)
-            .map(address => dbTokens.find(t => t.address === address))
+            .map(address => dbTokens.find(t => t.address === address && t.isTransactional === isTransactional))
             .map(async (token) => {
               let removed = 0
               if(isTransactional) {
@@ -105,8 +105,8 @@ export async function action(query?: EventsQuery): Promise<EventsProcessed> {
 
                 if (!removed)
                   logger.warn(`${name} Failed to remove ${token.id}`);
-              } 
-              
+              }
+
               await token.save();
 
               return removed > 0;
