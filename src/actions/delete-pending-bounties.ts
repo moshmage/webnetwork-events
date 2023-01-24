@@ -18,7 +18,7 @@ export const author = "MarcusviniciusLsantos";
 
 const {
   PUBLIC_WEB3_CONNECTION: web3Host,
-  WALLET_PRIVATE_KEY: privateKey,
+  NEXT_WALLET_PRIVATE_KEY: privateKey,
 } = process.env;
 
 export async function action(query?: EventsQuery): Promise<EventsProcessed> {
