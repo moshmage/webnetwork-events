@@ -17,7 +17,7 @@ export const description = "delete bounties pending and closed issue on github";
 export const author = "MarcusviniciusLsantos";
 
 const {
-  PUBLIC_WEB3_CONNECTION: web3Host,
+  NEXT_PUBLIC_WEB3_CONNECTION: web3Host,
   NEXT_WALLET_PRIVATE_KEY: privateKey,
 } = process.env;
 
