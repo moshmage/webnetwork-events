@@ -10,6 +10,7 @@ import {BlockProcessor} from "../interfaces/block-processor";
 import {Network_v2} from "@taikai/dappkit";
 import { handleBenefactors } from "src/modules/handle-benefactors";
 import BigNumber from "bignumber.js";
+import { updateLeaderboardBounties } from "src/modules/leaderboard";
 
 export const name = "getBountyCanceledEvents";
 export const schedule = "*/11 * * * *";
@@ -51,6 +52,8 @@ export async function action(
     } 
     
     await dbBounty.save();
+
+    await updateLeaderboardBounties("canceled");
 
     eventsProcessed[network.name] = {...eventsProcessed[network.name], [dbBounty.issueId!.toString()]: {bounty: dbBounty, eventBlock: block}};
   }

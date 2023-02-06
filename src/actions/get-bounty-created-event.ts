@@ -6,6 +6,8 @@ import {EventService} from "../services/event-service";
 import {BountyCreatedEvent} from "@taikai/dappkit/dist/src/interfaces/events/network-v2-events";
 import {DB_BOUNTY_NOT_FOUND, NETWORK_BOUNTY_NOT_FOUND} from "../utils/messages.const";
 import {BlockProcessor} from "../interfaces/block-processor";
+import { updateLeaderboardBounties } from "src/modules/leaderboard";
+import { updateBountiesHeader } from "src/modules/handle-header-information";
 
 export const name = "getBountyCreatedEvents";
 export const schedule = "*/10 * * * *";
@@ -23,7 +25,9 @@ async function validateToken(connection: Web3Connection, address, isTransactiona
     token = await db.tokens.create({
       name: await erc20.name(),
       symbol: await erc20.symbol(),
-      address, isTransactional
+      address, 
+      isTransactional,
+      isReward: !isTransactional
     });
   }
 
@@ -37,7 +41,9 @@ export async function action(query?: EventsQuery): Promise<EventsProcessed> {
   const processor: BlockProcessor<BountyCreatedEvent> = async (block, network) => {
     const {id, cid: issueId} = block.returnValues;
 
-    const bounty = await (service.Actor as Network_v2).getBounty(+id);
+    const networkActor = service.Actor as Network_v2;
+
+    const bounty = await networkActor.getBounty(+id);
     if (!bounty)
       return logger.error(NETWORK_BOUNTY_NOT_FOUND(name, id, network.networkAddress));
 
@@ -63,6 +69,9 @@ export async function action(query?: EventsQuery): Promise<EventsProcessed> {
     else dbBounty.tokenId = tokenId;
 
     await dbBounty.save();
+
+    await updateLeaderboardBounties();
+    await updateBountiesHeader()
 
     eventsProcessed[network.name] = {...eventsProcessed[network.name], [dbBounty.issueId!.toString()]: {bounty: dbBounty, eventBlock: block}};
 

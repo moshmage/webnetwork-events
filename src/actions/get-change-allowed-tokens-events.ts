@@ -44,7 +44,6 @@ export async function action(query?: EventsQuery): Promise<EventsProcessed> {
       const onRegistry = (address: string) => registryTokens[isTransactional ? "transactional" : "reward"].includes(address)
       const notOnRegistry = (token) => !registryTokens[isTransactional ? "transactional" : "reward"].some(a => a === token)
       const onDatabase = (address: string) => tokens.includes(address);
-      const notOnDatabase = (token) => !dbTokens.some((t) => t.address === token && t.isTransactional === isTransactional);
 
       let result: number[]|string[] = [];
 
@@ -52,17 +51,31 @@ export async function action(query?: EventsQuery): Promise<EventsProcessed> {
         result = await Promise.all(
           tokens
             .filter(onRegistry)
-            .filter(notOnDatabase)
             .map(async (tokenAddress) => {
               try {
                 const erc20 = new ERC20(service.web3Connection, tokenAddress)
                 await erc20.loadContract();
-                await db.tokens.create({
-                  name: await erc20.name(),
-                  symbol: await erc20.symbol(),
-                  address: tokenAddress,
-                  isTransactional
+
+                const [token, created] = await db.tokens.findOrCreate({
+                  where: {
+                    address: tokenAddress
+                  },
+                  defaults: {
+                    name: await erc20.name(),
+                    symbol: await erc20.symbol(),
+                    isAllowed: true,
+                    address: tokenAddress,
+                    isTransactional,
+                    isReward: !isTransactional
+                  }
                 });
+
+                if (!created) {
+                  if(isTransactional) token.isTransactional = true
+                  else if(!isTransactional) token.isReward = true
+                  token.isAllowed = true;
+                  await token.save();
+                }
 
                 return tokenAddress;
               } catch (e: any) {
@@ -77,9 +90,25 @@ export async function action(query?: EventsQuery): Promise<EventsProcessed> {
             .filter(onDatabase)
             .map(address => dbTokens.find(t => t.address === address))
             .map(async (token) => {
-              const removed = await db.network_tokens.destroy({where: {tokenId: token.id}});
-              if (!removed)
-                logger.warn(`${name} Failed to remove ${token.id}`);
+              let removed = 0
+              if(isTransactional) {
+                token.isTransactional = false;
+                await db.network_tokens.update({ isTransactional: false }, { where: { tokenId: token.id }})
+              }
+              if(!isTransactional) {
+                token.isReward = false
+                await db.network_tokens.update({ isReward: false }, { where: { tokenId: token.id }})
+              }
+              if(!token.isReward && !token.isTransactional){
+                token.isAllowed = false;
+                removed = await db.network_tokens.destroy({where: {tokenId: token.id}});
+
+                if (!removed)
+                  logger.warn(`${name} Failed to remove ${token.id}`);
+              } 
+              
+              await token.save();
+
               return removed > 0;
             })
         )
