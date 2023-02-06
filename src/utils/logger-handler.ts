@@ -42,7 +42,7 @@ export const output = (_level: LogLevel, message, ...rest) => { // eslint-disabl
 
     const client = new Client({node, auth: {username, password} })
 
-    client?.index({ index: "web-network-app", document: {level, timestamp: new Date(), message, rest}})
+    client?.index({ index: "web-network-events", document: {level, timestamp: new Date(), message, rest}})
       // .catch(e => console.log(e))
   }
 }
