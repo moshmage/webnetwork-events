@@ -35,7 +35,7 @@ export async function handleIsDisputed(
     return Promise.all(proposals
       .map(async (proposal) => {
         try {
-          if(proposal.issue.contractId && proposal.contractId){
+          if(proposal.issue.contractId !== undefined && proposal.contractId !== undefined){
             const isDisputed = await networkV2.isProposalDisputed(proposal.issue.contractId, proposal.contractId)
 
             if(proposal.isDisputed && !isDisputed && proposal.creator && proposal.network_id){
