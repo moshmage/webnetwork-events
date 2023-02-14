@@ -6,7 +6,7 @@ import {Op} from "sequelize";
 import {EventsProcessed, EventsQuery,} from "src/interfaces/block-chain-service";
 import {slashSplit} from "src/utils/string";
 import {Network_v2, Web3Connection} from "@taikai/dappkit";
-import {sendMessageEnvChannels} from "../integrations/telegram";
+import {sendMessageToTelegramChannels} from "../integrations/telegram";
 import {BOUNTY_STATE_CHANGED} from "../integrations/telegram/messages";
 import {dbBountyUrl} from "../utils/db-bounty-url";
 
@@ -78,7 +78,7 @@ export async function action(query?: EventsQuery): Promise<EventsProcessed> {
 
         dbBounty.state = "open";
         await dbBounty.save();
-        sendMessageEnvChannels(BOUNTY_STATE_CHANGED(dbBountyUrl(dbBounty), dbBounty.state));
+        sendMessageToTelegramChannels(BOUNTY_STATE_CHANGED(dbBountyUrl(dbBounty), dbBounty.state));
         eventsProcessed[networkName] = {
           ...eventsProcessed[networkName],
           [dbBounty.issueId!.toString()]: {bounty: dbBounty, eventBlock: null}

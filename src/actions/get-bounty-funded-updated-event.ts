@@ -8,7 +8,7 @@ import {BlockProcessor} from "../interfaces/block-processor";
 import {Network_v2} from "@taikai/dappkit";
 import BigNumber from "bignumber.js";
 import {handleBenefactors} from "src/modules/handle-benefactors";
-import {sendMessageEnvChannels} from "../integrations/telegram";
+import {sendMessageToTelegramChannels} from "../integrations/telegram";
 import {BOUNTY_FUNDED} from "../integrations/telegram/messages";
 import {dbBountyUrl} from "../utils/db-bounty-url";
 
@@ -46,7 +46,7 @@ export async function action(query?: EventsQuery): Promise<EventsProcessed> {
 
     await dbBounty.save();
 
-    sendMessageEnvChannels(BOUNTY_FUNDED(dbBountyUrl(dbBounty), `${amount}${dbBounty.token.symbol}`, `${bounty.fundingAmount}${dbBounty.token.symbol}`))
+    sendMessageToTelegramChannels(BOUNTY_FUNDED(dbBountyUrl(dbBounty), `${amount}${dbBounty.token.symbol}`, `${bounty.fundingAmount}${dbBounty.token.symbol}`))
 
     eventsProcessed[network.name] = {...eventsProcessed[network.name], [dbBounty.issueId!.toString()]: {bounty: dbBounty, eventBlock: block}};
   }
