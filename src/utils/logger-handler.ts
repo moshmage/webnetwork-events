@@ -21,6 +21,7 @@ const {
   NEXT_ELASTIC_SEARCH_USERNAME: username,
   NEXT_ELASTIC_SEARCH_PASSWORD: password,
   INDEX_STACK_TRACE,
+  WEBAPP_URL
 } = process.env;
 
 const LOG_LEVEL = process.env.LOG_LEVEL ? parseInt(process.env.LOG_LEVEL, 10) : LogLevel.log;
@@ -42,7 +43,7 @@ export const output = (_level: LogLevel, message, ...rest) => { // eslint-disabl
 
     const client = new Client({node, auth: {username, password} })
 
-    client?.index({ index: "web-network-events", document: {level, timestamp: new Date(), message, rest}})
+    client?.index({ index: "web-network-events", document: {level, timestamp: new Date(), message, rest, webAppUrl: WEBAPP_URL}})
       // .catch(e => console.log(e))
   }
 }
