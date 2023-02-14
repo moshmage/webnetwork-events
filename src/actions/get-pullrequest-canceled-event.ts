@@ -1,7 +1,7 @@
 import db from "src/db";
 import logger from "src/utils/logger-handler";
 import GHService from "src/services/github";
-import {EventsProcessed,EventsQuery,} from "src/interfaces/block-chain-service";
+import {EventsProcessed, EventsQuery,} from "src/interfaces/block-chain-service";
 import {Bounty, PullRequest} from "src/interfaces/bounties";
 import {slashSplit} from "src/utils/string";
 import {BountyPullRequestCanceledEvent} from "@taikai/dappkit/dist/src/interfaces/events/network-v2-events";
@@ -9,7 +9,7 @@ import {EventService} from "../services/event-service";
 import {DB_BOUNTY_NOT_FOUND, NETWORK_BOUNTY_NOT_FOUND} from "../utils/messages.const";
 import {BlockProcessor} from "../interfaces/block-processor";
 import {Network_v2} from "@taikai/dappkit";
-import {sendMessageEnvChannels} from "../integrations/telegram";
+import {sendMessageToTelegramChannels} from "../integrations/telegram";
 import {BOUNTY_STATE_CHANGED, PULL_REQUEST_CANCELED} from "../integrations/telegram/messages";
 import {dbBountyPRUrl, dbBountyUrl} from "../utils/db-bounty-url";
 
@@ -63,8 +63,8 @@ export async function action(query?: EventsQuery): Promise<EventsProcessed> {
         dbBounty.state = "open";
 
       await dbBounty.save();
-      sendMessageEnvChannels(BOUNTY_STATE_CHANGED(dbBountyUrl(dbBounty), dbBounty.state));
-      sendMessageEnvChannels(PULL_REQUEST_CANCELED(`${dbBountyPRUrl(dbBounty, dbPullRequest, pullRequestId)}`))
+      sendMessageToTelegramChannels(BOUNTY_STATE_CHANGED(dbBountyUrl(dbBounty), dbBounty.state));
+      sendMessageToTelegramChannels(PULL_REQUEST_CANCELED(`${dbBountyPRUrl(dbBounty, dbPullRequest, pullRequestId)}`))
     }
 
     eventsProcessed[network.name] = {...eventsProcessed[network.name], [dbBounty.issueId!.toString()]: {bounty: dbBounty, eventBlock: block}};

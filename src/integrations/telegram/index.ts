@@ -1,13 +1,13 @@
 import TelegramBot from "./telegram-bot";
 import {Logger} from "../../utils/logger-handler";
 
-export function sendMessageEnvChannels(message: string) {
+export function sendMessageToTelegramChannels(message: string, moreChannels: string[] = []) {
   if (!process.env.TELEGRAM_CHANNELS) {
-    Logger.debug(`TelegramBot`,`trying to use but missing process.env.TELEGRAM_CHANNELS`)
+    Logger.debug(`TelegramBot`, `trying to use but missing process.env.TELEGRAM_CHANNELS`)
     return;
   }
 
-  for (const channel of JSON.parse(process.env.TELEGRAM_CHANNELS)) {
+  for (const channel of JSON.parse(process.env.TELEGRAM_CHANNELS).concat(moreChannels)) {
     Logger.debug(`TelegramBot`, `Sending message to ${channel}`, message);
     TelegramBot?.telegram
       .sendMessage(channel, message)

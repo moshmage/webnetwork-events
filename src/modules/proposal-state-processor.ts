@@ -1,4 +1,4 @@
-import {Network_v2, XEvents} from "@taikai/dappkit";
+import {Network_v2} from "@taikai/dappkit";
 import {BountyProposalDisputedEvent} from "@taikai/dappkit/dist/src/interfaces/events/network-v2-events";
 import logger from "../utils/logger-handler";
 import {NETWORK_BOUNTY_NOT_FOUND} from "../utils/messages.const";
@@ -7,8 +7,8 @@ import {name} from "../actions/get-bounty-funded-updated-event";
 import {EventService} from "../services/event-service";
 import db from "src/db";
 import BigNumber from "bignumber.js";
-import {sendMessageEnvChannels} from "../integrations/telegram";
-import {PROPOSAL_CREATED, PROPOSAL_DISPUTED, PROPOSAL_DISPUTED_COMPLETE} from "../integrations/telegram/messages";
+import {sendMessageToTelegramChannels} from "../integrations/telegram";
+import {PROPOSAL_DISPUTED, PROPOSAL_DISPUTED_COMPLETE} from "../integrations/telegram/messages";
 import {dbBountyProposalUrl} from "../utils/db-bounty-url";
 
 export async function proposalStateProcessor(block: BountyProposalDisputedEvent, network, _service, eventsProcessed, isProposalRequired = true) {
@@ -45,9 +45,9 @@ export async function proposalStateProcessor(block: BountyProposalDisputedEvent,
   await dbBounty.save();
 
   if (!isDisputed)
-    sendMessageEnvChannels(PROPOSAL_DISPUTED(dbBountyProposalUrl(dbBounty, dbProposal, proposalId), (+dbProposal.disputeWeight - +oldWeight).toString()))
+    sendMessageToTelegramChannels(PROPOSAL_DISPUTED(dbBountyProposalUrl(dbBounty, dbProposal, proposalId), (+dbProposal.disputeWeight - +oldWeight).toString()))
   else
-    sendMessageEnvChannels(PROPOSAL_DISPUTED_COMPLETE(dbBountyProposalUrl(dbBounty, dbProposal, proposalId)));
+    sendMessageToTelegramChannels(PROPOSAL_DISPUTED_COMPLETE(dbBountyProposalUrl(dbBounty, dbProposal, proposalId)));
 
   eventsProcessed[network.name] = {...eventsProcessed[network.name], [dbBounty.issueId!.toString()]: {bounty: dbBounty, eventBlock: block}};
 

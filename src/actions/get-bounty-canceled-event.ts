@@ -8,10 +8,10 @@ import {BountyCanceledEvent} from "@taikai/dappkit/dist/src/interfaces/events/ne
 import {DB_BOUNTY_NOT_FOUND, NETWORK_BOUNTY_NOT_FOUND} from "../utils/messages.const";
 import {BlockProcessor} from "../interfaces/block-processor";
 import {Network_v2} from "@taikai/dappkit";
-import { handleBenefactors } from "src/modules/handle-benefactors";
+import {handleBenefactors} from "src/modules/handle-benefactors";
 import BigNumber from "bignumber.js";
-import { updateLeaderboardBounties } from "src/modules/leaderboard";
-import {sendMessageEnvChannels} from "../integrations/telegram";
+import {updateLeaderboardBounties} from "src/modules/leaderboard";
+import {sendMessageToTelegramChannels} from "../integrations/telegram";
 import {BOUNTY_STATE_CHANGED} from "../integrations/telegram/messages";
 import {dbBountyUrl} from "../utils/db-bounty-url";
 
@@ -52,10 +52,10 @@ export async function action(
     if(bounty.funding.length > 0){
       await handleBenefactors(bounty.funding, dbBounty, "delete" , name)
       dbBounty.fundedAmount = bounty.funding.reduce((prev, current) => prev.plus(current.amount), BigNumber(0)).toFixed()
-    } 
-    
+    }
+
     await dbBounty.save();
-    sendMessageEnvChannels(BOUNTY_STATE_CHANGED(dbBountyUrl(dbBounty), dbBounty.state));
+    sendMessageToTelegramChannels(BOUNTY_STATE_CHANGED(dbBountyUrl(dbBounty), dbBounty.state));
 
     await updateLeaderboardBounties("canceled");
 

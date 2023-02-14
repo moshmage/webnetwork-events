@@ -2,15 +2,15 @@ import "dotenv/config";
 import db from "src/db";
 import logger from "src/utils/logger-handler";
 import GHService from "src/services/github";
-import { EventsProcessed,EventsQuery, } from "src/interfaces/block-chain-service";
-import { Bounty, PullRequest } from "src/interfaces/bounties";
-import { slashSplit } from "src/utils/string";
+import {EventsProcessed, EventsQuery,} from "src/interfaces/block-chain-service";
+import {Bounty, PullRequest} from "src/interfaces/bounties";
+import {slashSplit} from "src/utils/string";
 import {EventService} from "../services/event-service";
 import {BountyPullRequestCreatedEvent} from "@taikai/dappkit/dist/src/interfaces/events/network-v2-events";
 import {DB_BOUNTY_NOT_FOUND, NETWORK_BOUNTY_NOT_FOUND} from "../utils/messages.const";
 import {BlockProcessor} from "../interfaces/block-processor";
 import {Network_v2} from "@taikai/dappkit";
-import {sendMessageEnvChannels} from "../integrations/telegram";
+import {sendMessageToTelegramChannels} from "../integrations/telegram";
 import {PULL_REQUEST_OPEN} from "../integrations/telegram/messages";
 import {dbBountyPRUrl} from "../utils/db-bounty-url";
 
@@ -71,7 +71,7 @@ export async function action(query?: EventsQuery): Promise<EventsProcessed> {
     await createCommentOnIssue(dbBounty, dbPullRequest)
       .catch(logger.error);
 
-    sendMessageEnvChannels(PULL_REQUEST_OPEN(dbBountyPRUrl(dbBounty, dbPullRequest, pullRequestId)))
+    sendMessageToTelegramChannels(PULL_REQUEST_OPEN(dbBountyPRUrl(dbBounty, dbPullRequest, pullRequestId)))
 
     eventsProcessed[network.name] = {...eventsProcessed[network.name], [dbBounty.issueId!.toString()]: {bounty: dbBounty, eventBlock: block}};
   }

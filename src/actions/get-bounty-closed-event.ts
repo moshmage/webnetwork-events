@@ -1,17 +1,17 @@
-import { Op } from "sequelize";
+import {Op} from "sequelize";
 import db from "src/db";
 import GHService from "src/services/github";
 import logger from "src/utils/logger-handler";
 import {EventsProcessed, EventsQuery,} from "src/interfaces/block-chain-service";
-import { slashSplit } from "src/utils/string";
+import {slashSplit} from "src/utils/string";
 import {EventService} from "../services/event-service";
 import {BountyClosedEvent} from "@taikai/dappkit/dist/src/interfaces/events/network-v2-events";
 import {DB_BOUNTY_NOT_FOUND, NETWORK_BOUNTY_NOT_FOUND} from "../utils/messages.const";
 import {BlockProcessor} from "../interfaces/block-processor";
 import {Network_v2} from "@taikai/dappkit";
-import { updateCuratorProposalParams } from "src/modules/handle-curators";
-import { updateLeaderboardBounties, updateLeaderboardProposals } from "src/modules/leaderboard";
-import {sendMessageEnvChannels} from "../integrations/telegram";
+import {updateCuratorProposalParams} from "src/modules/handle-curators";
+import {updateLeaderboardBounties, updateLeaderboardProposals} from "src/modules/leaderboard";
+import {sendMessageToTelegramChannels} from "../integrations/telegram";
 import {BOUNTY_CLOSED} from "../integrations/telegram/messages";
 import {dbBountyProposalUrl} from "../utils/db-bounty-url";
 
@@ -117,7 +117,7 @@ export async function action(
     dbBounty.state = "closed";
     await dbBounty.save();
 
-    sendMessageEnvChannels(BOUNTY_CLOSED(dbBountyProposalUrl(dbBounty, dbProposal, proposalId)));
+    sendMessageToTelegramChannels(BOUNTY_CLOSED(dbBountyProposalUrl(dbBounty, dbProposal, proposalId)));
 
     await updateUserPayments(bounty.proposals[+proposalId], block.transactionHash, dbBounty.id, bounty.tokenAmount);
 

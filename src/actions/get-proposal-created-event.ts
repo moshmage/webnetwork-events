@@ -8,8 +8,8 @@ import {validateProposal} from "../modules/proposal-validate-state";
 import {BlockProcessor} from "../interfaces/block-processor";
 import {Network_v2} from "@taikai/dappkit";
 import BigNumber from "bignumber.js";
-import { updateLeaderboardProposals } from "src/modules/leaderboard";
-import {sendMessageEnvChannels} from "../integrations/telegram";
+import {updateLeaderboardProposals} from "src/modules/leaderboard";
+import {sendMessageToTelegramChannels} from "../integrations/telegram";
 import {BOUNTY_STATE_CHANGED, PROPOSAL_CREATED} from "../integrations/telegram/messages";
 import {dbBountyProposalUrl, dbBountyUrl} from "../utils/db-bounty-url";
 
@@ -72,8 +72,8 @@ export async function action(
     if (!["canceled", "closed", "proposal"].includes(dbBounty.state!)) {
       dbBounty.state = "proposal";
       await dbBounty.save();
-      sendMessageEnvChannels(BOUNTY_STATE_CHANGED(dbBountyUrl(dbBounty), dbBounty.state))
-      sendMessageEnvChannels(PROPOSAL_CREATED(dbBountyProposalUrl(dbBounty, dbProposal, proposalId)))
+      sendMessageToTelegramChannels(BOUNTY_STATE_CHANGED(dbBountyUrl(dbBounty), dbBounty.state))
+      sendMessageToTelegramChannels(PROPOSAL_CREATED(dbBountyProposalUrl(dbBounty, dbProposal, proposalId)))
     }
 
     await updateLeaderboardProposals();
