@@ -11,6 +11,9 @@ import {Network_v2} from "@taikai/dappkit";
 import { handleBenefactors } from "src/modules/handle-benefactors";
 import BigNumber from "bignumber.js";
 import { updateLeaderboardBounties } from "src/modules/leaderboard";
+import {sendMessageEnvChannels} from "../integrations/telegram";
+import {BOUNTY_STATE_CHANGED} from "../integrations/telegram/messages";
+import {dbBountyUrl} from "../utils/db-bounty-url";
 
 export const name = "getBountyCanceledEvents";
 export const schedule = "*/11 * * * *";
@@ -52,6 +55,7 @@ export async function action(
     } 
     
     await dbBounty.save();
+    sendMessageEnvChannels(BOUNTY_STATE_CHANGED(dbBountyUrl(dbBounty), dbBounty.state));
 
     await updateLeaderboardBounties("canceled");
 

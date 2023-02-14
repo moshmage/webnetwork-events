@@ -10,6 +10,9 @@ import { slashSplit } from "src/utils/string";
 import GHService from "src/services/github";
 import { subMilliseconds, isAfter } from "date-fns";
 import { Op } from "sequelize";
+import {sendMessageEnvChannels} from "../integrations/telegram";
+import {BOUNTY_STATE_CHANGED} from "../integrations/telegram/messages";
+import {dbBountyUrl} from "../utils/db-bounty-url";
 
 export const name = "updateBountiesToDraft";
 export const schedule = "0 2 * * *" // every 2 AM
@@ -94,7 +97,7 @@ export async function action(query?: EventsQuery): Promise<EventsProcessed> {
 
         dbBounty.state = "draft";
         await dbBounty.save();
-
+        sendMessageEnvChannels(BOUNTY_STATE_CHANGED(dbBountyUrl(dbBounty), dbBounty.state));
         eventsProcessed[networkName] = {
           ...eventsProcessed[networkName],
           [dbBounty.issueId!.toString()]: { bounty: dbBounty, eventBlock: null }

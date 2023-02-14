@@ -9,6 +9,9 @@ import {EventService} from "../services/event-service";
 import {DB_BOUNTY_NOT_FOUND, NETWORK_BOUNTY_NOT_FOUND} from "../utils/messages.const";
 import {BlockProcessor} from "../interfaces/block-processor";
 import {Network_v2} from "@taikai/dappkit";
+import {sendMessageEnvChannels} from "../integrations/telegram";
+import {BOUNTY_STATE_CHANGED, PULL_REQUEST_CANCELED} from "../integrations/telegram/messages";
+import {dbBountyPRUrl, dbBountyUrl} from "../utils/db-bounty-url";
 
 export const name = "getBountyPullRequestCanceledEvents";
 export const schedule = "*/11 * * * *";
@@ -60,6 +63,8 @@ export async function action(query?: EventsQuery): Promise<EventsProcessed> {
         dbBounty.state = "open";
 
       await dbBounty.save();
+      sendMessageEnvChannels(BOUNTY_STATE_CHANGED(dbBountyUrl(dbBounty), dbBounty.state));
+      sendMessageEnvChannels(PULL_REQUEST_CANCELED(`${dbBountyPRUrl(dbBounty, dbPullRequest, pullRequestId)}`))
     }
 
     eventsProcessed[network.name] = {...eventsProcessed[network.name], [dbBounty.issueId!.toString()]: {bounty: dbBounty, eventBlock: block}};

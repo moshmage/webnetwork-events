@@ -66,6 +66,7 @@ const events = {
 
 eventsRouter.get("/:entity/:event", async (req, res) => {
   try {
+
     const { entity, event } = req.params;
 
     if (!events[entity][event])

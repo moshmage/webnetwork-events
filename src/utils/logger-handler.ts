@@ -1,5 +1,6 @@
 import {Client} from "@elastic/elasticsearch";
 import {format} from "date-fns";
+import {isObject} from "util";
 
 enum LogLevel {
   none, error, warn, info, trace, log, debug
@@ -43,7 +44,9 @@ export const output = (_level: LogLevel, message, ...rest) => { // eslint-disabl
 
     const client = new Client({node, auth: {username, password} })
 
-    client?.index({ index: "web-network-events", document: {level, timestamp: new Date(), message, rest, webAppUrl: WEBAPP_URL}})
+    const info = Array.isArray(rest) || rest !== null && typeof rest === "object" ? rest : {info: {rest: rest || ''}};
+
+    client?.index({ index: "web-network-events", document: {level, timestamp: new Date(), message, info, webAppUrl: WEBAPP_URL}})
       // .catch(e => console.log(e))
   }
 }

@@ -6,6 +6,9 @@ import {BountyAmountUpdatedEvent} from "@taikai/dappkit/dist/src/interfaces/even
 import {DB_BOUNTY_NOT_FOUND, NETWORK_BOUNTY_NOT_FOUND} from "../utils/messages.const";
 import {BlockProcessor} from "../interfaces/block-processor";
 import {Network_v2} from "@taikai/dappkit";
+import {sendMessageEnvChannels} from "../integrations/telegram";
+import {BOUNTY_AMOUNT_UPDATED} from "../integrations/telegram/messages";
+import {dbBountyUrl} from "../utils/db-bounty-url";
 
 export const name = "getBountyAmountUpdatedEvents";
 export const schedule = "*/13 * * * *";
@@ -32,7 +35,7 @@ export async function action(query?: EventsQuery): Promise<EventsProcessed> {
       else {
         dbBounty.amount = bounty.tokenAmount.toString();
         await dbBounty.save();
-
+        sendMessageEnvChannels(BOUNTY_AMOUNT_UPDATED(dbBountyUrl(dbBounty),`${dbBounty.amount}${dbBounty.token.symbol}`))
         eventsProcessed[network.name] = {...eventsProcessed[network.name], [dbBounty.issueId!.toString()]: {bounty: dbBounty, eventBlock: block}};
       }
     }
