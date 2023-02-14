@@ -8,6 +8,9 @@ import {DB_BOUNTY_NOT_FOUND, NETWORK_BOUNTY_NOT_FOUND} from "../utils/messages.c
 import {BlockProcessor} from "../interfaces/block-processor";
 import {updateLeaderboardBounties} from "src/modules/leaderboard";
 import {updateBountiesHeader} from "src/modules/handle-header-information";
+import {sendMessageEnvChannels} from "../integrations/telegram";
+import {BOUNTY_STATE_CHANGED, NEW_BOUNTY_OPEN} from "../integrations/telegram/messages";
+import {dbBountyUrl} from "../utils/db-bounty-url";
 
 export const name = "getBountyCreatedEvents";
 export const schedule = "*/10 * * * *";
@@ -71,7 +74,8 @@ export async function action(query?: EventsQuery): Promise<EventsProcessed> {
     await dbBounty.save();
 
     await updateLeaderboardBounties();
-    await updateBountiesHeader()
+    await updateBountiesHeader();
+    sendMessageEnvChannels(BOUNTY_STATE_CHANGED(dbBountyUrl(dbBounty), dbBounty.state));
 
     eventsProcessed[network.name] = {...eventsProcessed[network.name], [dbBounty.issueId!.toString()]: {bounty: dbBounty, eventBlock: block}};
 

@@ -9,6 +9,9 @@ import {BlockProcessor} from "../interfaces/block-processor";
 import {Network_v2} from "@taikai/dappkit";
 import BigNumber from "bignumber.js";
 import {updateLeaderboardProposals} from "src/modules/leaderboard";
+import {sendMessageEnvChannels} from "../integrations/telegram";
+import {BOUNTY_STATE_CHANGED, PROPOSAL_CREATED} from "../integrations/telegram/messages";
+import {dbBountyProposalUrl, dbBountyUrl} from "../utils/db-bounty-url";
 
 export const name = "getBountyProposalCreatedEvents";
 export const schedule = "*/13 * * * *";
@@ -69,6 +72,8 @@ export async function action(
     if (!["canceled", "closed", "proposal"].includes(dbBounty.state!)) {
       dbBounty.state = "proposal";
       await dbBounty.save();
+      sendMessageEnvChannels(BOUNTY_STATE_CHANGED(dbBountyUrl(dbBounty), dbBounty.state))
+      sendMessageEnvChannels(PROPOSAL_CREATED(dbBountyProposalUrl(dbBounty, dbProposal, proposalId)))
     }
 
     await updateLeaderboardProposals();

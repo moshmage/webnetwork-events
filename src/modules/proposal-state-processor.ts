@@ -7,6 +7,9 @@ import {name} from "../actions/get-bounty-funded-updated-event";
 import {EventService} from "../services/event-service";
 import db from "src/db";
 import BigNumber from "bignumber.js";
+import {sendMessageEnvChannels} from "../integrations/telegram";
+import {PROPOSAL_CREATED, PROPOSAL_DISPUTED, PROPOSAL_DISPUTED_COMPLETE} from "../integrations/telegram/messages";
+import {dbBountyProposalUrl} from "../utils/db-bounty-url";
 
 export async function proposalStateProcessor(block: BountyProposalDisputedEvent, network, _service, eventsProcessed, isProposalRequired = true) {
   const {bountyId, prId, proposalId,} = block.returnValues;
@@ -28,7 +31,9 @@ export async function proposalStateProcessor(block: BountyProposalDisputedEvent,
   if (!dbProposal) return logger.warn(`${name} Proposal ${proposal.id} not found on database`);
 
   const isDisputed = await ((_service as EventService).Actor as Network_v2).isProposalDisputed(bountyId, proposal.id); 
-  
+
+
+  const oldWeight = dbProposal.disputeWeight || 0;
   dbProposal.isDisputed = isDisputed
   dbProposal.disputeWeight = new BigNumber(proposal.disputeWeight).toFixed()
   dbProposal.refusedByBountyOwner = proposal.refusedByBountyOwner
@@ -40,6 +45,11 @@ export async function proposalStateProcessor(block: BountyProposalDisputedEvent,
       await validateProposalState(dbBounty.state!, bounty, _service.Actor as Network_v2);
 
   await dbBounty.save();
+
+  if (!isDisputed)
+    sendMessageEnvChannels(PROPOSAL_DISPUTED(dbBountyProposalUrl(dbBounty, dbProposal, proposalId), (+dbProposal.disputeWeight - +oldWeight).toString()))
+  else
+    sendMessageEnvChannels(PROPOSAL_DISPUTED_COMPLETE(dbBountyProposalUrl(dbBounty, dbProposal, proposalId)));
 
   eventsProcessed[network.name] = {...eventsProcessed[network.name], [dbBounty.issueId!.toString()]: {bounty: dbBounty, eventBlock: block}};
 
