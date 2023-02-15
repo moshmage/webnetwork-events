@@ -128,9 +128,6 @@ export async function action(
     await updateLeaderboardBounties("closed");
     await updateLeaderboardProposals("accepted");
 
-    await updateLeaderboardBounties("closed");
-    await updateLeaderboardProposals("accepted");
-
     eventsProcessed[network.name] = {...eventsProcessed[network.name], [dbBounty.issueId!.toString()]: {bounty: dbBounty, eventBlock: block}};
   }
 
