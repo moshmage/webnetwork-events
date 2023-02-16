@@ -1,11 +1,10 @@
 import db from "src/db";
 import GHService from "src/services/github";
 import logger from "src/utils/logger-handler";
-import loggerHandler from "src/utils/logger-handler";
-import { subMilliseconds } from "date-fns";
-import { Op } from "sequelize";
+import {subMilliseconds} from "date-fns";
+import {Op} from "sequelize";
 import {EventsProcessed, EventsQuery,} from "src/interfaces/block-chain-service";
-import { slashSplit } from "src/utils/string";
+import {slashSplit} from "src/utils/string";
 import {Network_v2, Web3Connection} from "@taikai/dappkit";
 
 
@@ -31,7 +30,7 @@ export async function action(query?: EventsQuery): Promise<EventsProcessed> {
 
     const networks = await db.networks.findAll({where: {isRegistered: true}, raw: true});
     if (!networks || !networks.length) {
-      loggerHandler.warn(`${name} found no networks`);
+      logger.warn(`${name} found no networks`);
       return eventsProcessed;
     }
 
@@ -49,7 +48,7 @@ export async function action(query?: EventsQuery): Promise<EventsProcessed> {
           include: [{ association: "token" }, { association: "repository" }]
         });
 
-      loggerHandler.info(`${name} found ${bounties.length} draft bounties on ${networkAddress}`);
+      logger.info(`${name} found ${bounties.length} draft bounties on ${networkAddress}`);
 
       if (!bounties || !bounties.length)
         continue;
@@ -88,7 +87,7 @@ export async function action(query?: EventsQuery): Promise<EventsProcessed> {
     }
 
   } catch (err: any) {
-    logger.error(`${name} Error`, err?.message || err.toString());
+    logger.error(`${name} Error`, err);
   }
 
   return eventsProcessed;

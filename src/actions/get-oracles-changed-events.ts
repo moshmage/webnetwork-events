@@ -1,14 +1,14 @@
 import db from "src/db";
 import logger from "src/utils/logger-handler";
 import {fromSmartContractDecimals, Network_v2,} from "@taikai/dappkit";
-import {EventsProcessed,EventsQuery,} from "src/interfaces/block-chain-service";
+import {EventsProcessed, EventsQuery,} from "src/interfaces/block-chain-service";
 import {OraclesChangedEvent} from "@taikai/dappkit/dist/src/interfaces/events/network-v2-events";
 import {EventService} from "../services/event-service";
 import {BlockProcessor} from "../interfaces/block-processor";
 import BigNumber from "bignumber.js";
-import { handleCurators } from "src/modules/handle-curators";
-import { updatePriceHeader } from "src/modules/handle-header-information";
-import { handleIsDisputed } from "src/modules/handle-isDisputed";
+import {handleCurators} from "src/modules/handle-curators";
+import {updatePriceHeader} from "src/modules/handle-header-information";
+import {handleIsDisputed} from "src/modules/handle-isDisputed";
 
 export const name = "getOraclesChangedEvents";
 export const schedule = "*/30 * * * *";
@@ -27,7 +27,7 @@ export async function action(query?: EventsQuery): Promise<EventsProcessed> {
 
     const dbNetwork = await db.networks.findOne({where: {networkAddress: network.networkAddress}});
     if (!dbNetwork)
-      return logger.error(`${name} Could not find network ${network.networkAddress}`);
+      return logger.warn(`${name} Could not find network ${network.networkAddress}`);
 
     if (!councilAmount)
       councilAmount = await (service.Actor as Network_v2).councilAmount();

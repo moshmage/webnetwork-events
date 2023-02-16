@@ -1,8 +1,8 @@
-import { Op } from "sequelize";
+import {Op} from "sequelize";
 import db from "src/db";
 import generateCard from "src/modules/generate-bounty-cards";
 import ipfsService from "src/services/ipfs-service";
-import logger, {Logger} from "src/utils/logger-handler";
+import logger from "src/utils/logger-handler";
 
 export const name = "seo-generate-cards";
 export const schedule = "*/10 * * * *";
@@ -57,21 +57,22 @@ export async function action(issueId?: string) {
 
     for (const bounty of bounties) {
       try {
-        logger.info(`${name} Creating card to bounty ${bounty.issueId}`);
+        logger.debug(`${name} Creating card to bounty ${bounty.issueId}`);
         const card = await generateCard(bounty);
 
-        const { hash } = await ipfsService.add(card);
-        if (!hash)
+        const {hash} = await ipfsService.add(card);
+        if (!hash) {
+          logger.warn(`${name} Failed to get hash from IPFS for ${bounty.issueId}`);
           continue;
+        }
 
-        await bounty.update({ seoImage: hash });
+        await bounty.update({seoImage: hash});
 
-        bountiesProcessed.push({ issueId: bounty.issueId, hash });
+        bountiesProcessed.push({issueId: bounty.issueId, hash});
 
-        logger.info(`${name} Bounty card for ${bounty.issueId} has been updated`);
+        logger.debug(`${name} Bounty card for ${bounty.issueId} has been updated`);
       } catch (error: any) {
-        logger.error(`${name} Error generating card for ${bounty.issueId}`);
-        Logger.trace(error);
+        logger.error(`${name} Error generating card for ${bounty.issueId}`, error);
         continue;
       }
     }

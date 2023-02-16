@@ -1,12 +1,11 @@
 import db from "src/db";
 import logger from "src/utils/logger-handler";
 import {Network_v2} from "@taikai/dappkit";
-import {EventsProcessed,EventsQuery,} from "src/interfaces/block-chain-service";
+import {EventsProcessed, EventsQuery,} from "src/interfaces/block-chain-service";
 import {OraclesChangedEvent} from "@taikai/dappkit/dist/src/interfaces/events/network-v2-events";
 import {EventService} from "../services/event-service";
 import {BlockProcessor} from "../interfaces/block-processor";
-import BigNumber from "bignumber.js";
-import { handleCurators } from "src/modules/handle-curators";
+import {handleCurators} from "src/modules/handle-curators";
 
 export const name = "getOraclesTransferEvents";
 export const schedule = "*/30 * * * *";
@@ -15,8 +14,6 @@ export const author = "marcusviniciusLsantos";
 
 
 async function handleTransfers(addresses: string[], councilAmount: string, networkId: number, service) {
-  const decimals = (service.Actor as Network_v2).networkToken.decimals
-
   return Promise.all(
     addresses.map((address) =>
       service.Actor.getOraclesOf(address).then((votes) =>
@@ -37,7 +34,7 @@ export async function action(query?: EventsQuery): Promise<EventsProcessed> {
 
     const dbNetwork = await db.networks.findOne({where: {networkAddress: network.networkAddress}});
     if (!dbNetwork)
-      return logger.error(`${name} Could not find network ${network.networkAddress}`);
+      return logger.warn(`${name} Could not find network ${network.networkAddress}`);
 
     if (!councilAmount)
       councilAmount = await (service.Actor as Network_v2).councilAmount();

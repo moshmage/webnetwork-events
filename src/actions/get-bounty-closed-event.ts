@@ -1,16 +1,16 @@
-import { Op } from "sequelize";
+import {Op} from "sequelize";
 import db from "src/db";
 import GHService from "src/services/github";
 import logger from "src/utils/logger-handler";
 import {EventsProcessed, EventsQuery,} from "src/interfaces/block-chain-service";
-import { slashSplit } from "src/utils/string";
+import {slashSplit} from "src/utils/string";
 import {EventService} from "../services/event-service";
 import {BountyClosedEvent} from "@taikai/dappkit/dist/src/interfaces/events/network-v2-events";
 import {DB_BOUNTY_NOT_FOUND, NETWORK_BOUNTY_NOT_FOUND} from "../utils/messages.const";
 import {BlockProcessor} from "../interfaces/block-processor";
 import {Network_v2} from "@taikai/dappkit";
-import { updateCuratorProposalParams } from "src/modules/handle-curators";
-import { updateLeaderboardBounties, updateLeaderboardProposals } from "src/modules/leaderboard";
+import {updateCuratorProposalParams} from "src/modules/handle-curators";
+import {updateLeaderboardBounties, updateLeaderboardProposals} from "src/modules/leaderboard";
 
 export const name = "getBountyClosedEvents";
 export const schedule = "*/12 * * * *";
@@ -21,7 +21,10 @@ async function mergeProposal(bounty, id, issueId, network_id) {
   const pullRequest =
     await db.pull_requests.findOne({where: {id, issueId, network_id},});
 
-  if (!pullRequest) return;
+  if (!pullRequest) {
+    logger.debug(`mergeProposal() has no pullRequest on database`);
+    return;
+  }
 
   const [owner, repo] = slashSplit(bounty?.repository?.githubPath);
 
@@ -64,7 +67,7 @@ async function updateUserPayments(proposal, transactionHash, issueId, tokenAmoun
 
 async function updateCuratorProposal(address: string, networkId: number) {
   const curator = await db.curators.findOne({ where: { address, networkId }})
-  if(curator) return await updateCuratorProposalParams(curator, "acceptedProposals", "add")
+  if (curator) return await updateCuratorProposalParams(curator, "acceptedProposals", "add")
 }
 
 export async function action(
@@ -80,7 +83,7 @@ export async function action(
 
     const bounty = await networkActor.getBounty(id);
     if (!bounty)
-      return logger.error(NETWORK_BOUNTY_NOT_FOUND(name, id, network.networkAddress));
+      return logger.warn(NETWORK_BOUNTY_NOT_FOUND(name, id, network.networkAddress));
 
     const dbBounty = await db.issues.findOne({
       where: {contractId: id, issueId: bounty.cid, network_id: network?.id,},
@@ -93,7 +96,7 @@ export async function action(
     });
 
     if (!dbBounty)
-      return logger.error(DB_BOUNTY_NOT_FOUND(name, bounty.cid, network.id))
+      return logger.warn(DB_BOUNTY_NOT_FOUND(name, bounty.cid, network.id))
 
     const dbProposal = await db.merge_proposals.findOne({where: {issueId: dbBounty.id, contractId: proposalId, network_id: network?.id}});
 
@@ -106,7 +109,7 @@ export async function action(
           await closePullRequests(dbBounty, mergedPR.githubId, network?.id);
 
       } catch (error) {
-        logger.error(`proposal ${proposalId} was not is not mergeable: ${error}`);
+        logger.error(`${name} proposal ${proposalId} was not is not mergeable`, error?.toString());
       }
     }
 

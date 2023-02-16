@@ -7,7 +7,7 @@ import {DB_BOUNTY_NOT_FOUND, NETWORK_BOUNTY_NOT_FOUND} from "../utils/messages.c
 import {BlockProcessor} from "../interfaces/block-processor";
 import {Network_v2} from "@taikai/dappkit";
 import BigNumber from "bignumber.js";
-import { handleBenefactors } from "src/modules/handle-benefactors";
+import {handleBenefactors} from "src/modules/handle-benefactors";
 
 export const name = "getBountyFundedEvents";
 export const schedule = "*/14 * * * *";
@@ -23,7 +23,7 @@ export async function action(query?: EventsQuery): Promise<EventsProcessed> {
 
     const bounty = await (service.Actor as Network_v2).getBounty(+id);
     if (!bounty)
-      return logger.error(NETWORK_BOUNTY_NOT_FOUND(name, id, network.networkAddress));
+      return logger.warn(NETWORK_BOUNTY_NOT_FOUND(name, id, network.networkAddress));
 
     const dbBounty = await db.issues.findOne({
       where: {contractId: id, issueId: bounty.cid, network_id: network?.id,},
@@ -31,7 +31,7 @@ export async function action(query?: EventsQuery): Promise<EventsProcessed> {
     })
     
     if (!dbBounty)
-      return logger.error(DB_BOUNTY_NOT_FOUND(name, bounty.cid, network.id));
+      return logger.warn(DB_BOUNTY_NOT_FOUND(name, bounty.cid, network.id));
 
     dbBounty.amount =
       dbBounty.fundedAmount =

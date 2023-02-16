@@ -1,11 +1,16 @@
 import cors, {CorsOptions} from "cors";
 import dotenv from "dotenv";
-import express, { Express } from "express";
-import { readFileSync } from "fs";
-import { createServer } from "https";
-import { router } from "src/routes";
+import express, {Express} from "express";
+import {readFileSync} from "fs";
+import {createServer} from "https";
+import {router} from "src/routes";
 import loggerHandler from "./utils/logger-handler";
+import {GlobalCatcher} from "./utils/global-catcher";
+import "elastic-apm-node/start";
+
 dotenv.config();
+
+GlobalCatcher();
 
 const app: Express = express();
 const useSSL = process.env.SSL_ENABLED === "true";
@@ -24,7 +29,7 @@ app.use(cors(corsOptions));
 app.options("*", cors(corsOptions));
 
 app.use((req, res, next) => {
-  loggerHandler.info(`Access`, {method: req.method, url: req.url, body: req.body});
+  loggerHandler.debug(`Access`, {method: req.method, url: req.url, body: req.body});
   next();
 })
 
@@ -36,7 +41,7 @@ app.use((err, req, res, next) => {
 app.use(router);
 
 const listen = () => {
-  loggerHandler.warn(`API Listening on ${port} over HTTP${useSSL ? "S" : ""}`);
+  loggerHandler.info(`API Listening on ${port} over HTTP${useSSL ? "S" : ""}`);
   loggerHandler.info(`API corsOptions`, corsOptions);
 }
 

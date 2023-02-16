@@ -5,7 +5,7 @@ import {EventsProcessed, EventsQuery,} from "src/interfaces/block-chain-service"
 import {EventService} from "../services/event-service";
 import {ChangeAllowedTokensEvent} from "@taikai/dappkit/dist/src/interfaces/events/network-registry";
 import {BlockProcessor} from "../interfaces/block-processor";
-import { getRegistryAddressDb } from "src/modules/get-registry-database";
+import {getRegistryAddressDb} from "src/modules/get-registry-database";
 
 export const name = "getChangeAllowedTokensEvents";
 export const schedule = "*/60 * * * *";
@@ -21,12 +21,13 @@ export async function action(query?: EventsQuery): Promise<EventsProcessed> {
 
   const processor: BlockProcessor<ChangeAllowedTokensEvent> = async (block, network) => {
     const {tokens, operation, kind} = block.returnValues as any;
-  
+
     const networkRegistry = await getRegistryAddressDb()
 
-    if (!networkRegistry) logger.warn(`${name} Failed missing network registry on database`);
-    else { 
-      const web3Connection = new Web3Connection({ web3Host, privateKey });
+    if (!networkRegistry)
+      logger.warn(`${name} Failed missing network registry on database`);
+    else {
+      const web3Connection = new Web3Connection({web3Host, privateKey});
       await web3Connection.start();
 
       const registry = new NetworkRegistry(
@@ -79,7 +80,7 @@ export async function action(query?: EventsQuery): Promise<EventsProcessed> {
 
                 return tokenAddress;
               } catch (e: any) {
-                logger.warn(`${name} Failed to create ${tokenAddress} in database`, e?.message || e.toString());
+                logger.error(`${name} Failed to create ${tokenAddress} in database`, e);
                 return;
               }
             }));
