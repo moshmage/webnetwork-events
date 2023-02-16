@@ -1,19 +1,17 @@
 import db from "src/db";
 import logger from "src/utils/logger-handler";
-import { BountyToken, NetworkRegistry, Web3Connection, XEvents } from "@taikai/dappkit";
-import {
-  EventsProcessed,
-  EventsQuery,
-} from "src/interfaces/block-chain-service";
-import { leaderboardAttributes } from "src/db/models/leaderboard";
-import { getRegistryAddressDb } from "src/modules/get-registry-database";
+import loggerHandler from "src/utils/logger-handler";
+import {BountyToken, NetworkRegistry, Web3Connection} from "@taikai/dappkit";
+import {EventsProcessed, EventsQuery,} from "src/interfaces/block-chain-service";
+import {leaderboardAttributes} from "src/db/models/leaderboard";
+import {getRegistryAddressDb} from "src/modules/get-registry-database";
 
 export const name = "getTransferEvents";
 export const schedule = "*/60 * * * *";
 export const description = "retrieving bounty token transfer events";
 export const author = "MarcusviniciusLsantos";
 
-const { NEXT_PUBLIC_WEB3_CONNECTION: web3Host, NEXT_WALLET_PRIVATE_KEY: privateKey } =
+const {NEXT_PUBLIC_WEB3_CONNECTION: web3Host, NEXT_WALLET_PRIVATE_KEY: privateKey} =
   process.env;
 
 export async function action(query?: EventsQuery): Promise<EventsProcessed> {
@@ -51,12 +49,12 @@ export async function action(query?: EventsQuery): Promise<EventsProcessed> {
         const requests = Math.ceil((startBlock - endBlock) / perRequest);
     
         let toBlock = 0;
-    
-        console.log(`Fetching ${name} total of ${requests}, from: ${startBlock} to ${endBlock}`);
+
+        loggerHandler.info(`${name} Fetching total of ${requests}, from: ${startBlock} to ${endBlock}`);
         for (let fromBlock = startBlock; fromBlock < endBlock; fromBlock += perRequest) {
           toBlock = fromBlock + perRequest > endBlock ? endBlock : fromBlock + perRequest;
-    
-          console.log(`${name} fetch from ${fromBlock} to ${toBlock}`);
+
+          loggerHandler.info(`${name} fetch from ${fromBlock} to ${toBlock}`);
           pool.push(await _bountyToken.getTransferEvents({fromBlock, toBlock}));
         }
       }
@@ -103,7 +101,7 @@ export async function action(query?: EventsQuery): Promise<EventsProcessed> {
         }
       }
     } catch (err: any) {
-      logger.error(`${name} Error`, err?.message || err.toString());
+      logger.error(`${name} Error`, err);
     }
   }
 

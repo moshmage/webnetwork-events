@@ -2,9 +2,9 @@ import "dotenv/config";
 import db from "src/db";
 import logger from "src/utils/logger-handler";
 import GHService from "src/services/github";
-import { EventsProcessed,EventsQuery, } from "src/interfaces/block-chain-service";
-import { Bounty, PullRequest } from "src/interfaces/bounties";
-import { slashSplit } from "src/utils/string";
+import {EventsProcessed, EventsQuery,} from "src/interfaces/block-chain-service";
+import {Bounty, PullRequest} from "src/interfaces/bounties";
+import {slashSplit} from "src/utils/string";
 import {EventService} from "../services/event-service";
 import {BountyPullRequestCreatedEvent} from "@taikai/dappkit/dist/src/interfaces/events/network-v2-events";
 import {DB_BOUNTY_NOT_FOUND, NETWORK_BOUNTY_NOT_FOUND} from "../utils/messages.const";
@@ -40,14 +40,14 @@ export async function action(query?: EventsQuery): Promise<EventsProcessed> {
 
     const bounty = await (_service.Actor as Network_v2).getBounty(bountyId);
     if (!bounty)
-      return logger.error(NETWORK_BOUNTY_NOT_FOUND(name, bountyId, network.networkAddress));
+      return logger.warn(NETWORK_BOUNTY_NOT_FOUND(name, bountyId, network.networkAddress));
 
     const dbBounty = await db.issues.findOne({
       where: {contractId: bountyId, issueId: bounty.cid, network_id: network.id},
       include: [{ association: "repository" }, { association: "network" }]});
 
     if (!dbBounty)
-      return logger.error(DB_BOUNTY_NOT_FOUND(name, bounty.cid, network.id));
+      return logger.warn(DB_BOUNTY_NOT_FOUND(name, bounty.cid, network.id));
 
     const pullRequest = bounty.pullRequests[pullRequestId];
 

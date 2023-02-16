@@ -8,7 +8,7 @@ import {validateProposal} from "../modules/proposal-validate-state";
 import {BlockProcessor} from "../interfaces/block-processor";
 import {Network_v2} from "@taikai/dappkit";
 import BigNumber from "bignumber.js";
-import { updateLeaderboardProposals } from "src/modules/leaderboard";
+import {updateLeaderboardProposals} from "src/modules/leaderboard";
 
 export const name = "getBountyProposalCreatedEvents";
 export const schedule = "*/13 * * * *";
@@ -26,7 +26,7 @@ export async function action(
 
     const bounty = await (service.Actor as Network_v2).getBounty(bountyId);
     if (!bounty)
-      return logger.error(NETWORK_BOUNTY_NOT_FOUND(name, bountyId, network.networkAddress));
+      return logger.warn(NETWORK_BOUNTY_NOT_FOUND(name, bountyId, network.networkAddress));
 
     const values = await validateProposal(bounty, prId, proposalId, network.id, false);
     if (!values?.proposal || !values?.dbBounty || !values?.dbPullRequest)

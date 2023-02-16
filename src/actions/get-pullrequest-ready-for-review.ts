@@ -1,6 +1,6 @@
 import db from "src/db";
 import logger from "src/utils/logger-handler";
-import { EventsProcessed, EventsQuery, } from "src/interfaces/block-chain-service";
+import {EventsProcessed, EventsQuery,} from "src/interfaces/block-chain-service";
 import {EventService} from "../services/event-service";
 import {BountyPullRequestReadyForReviewEvent} from "@taikai/dappkit/dist/src/interfaces/events/network-v2-events";
 import {DB_BOUNTY_NOT_FOUND, NETWORK_BOUNTY_NOT_FOUND} from "../utils/messages.const";
@@ -21,12 +21,12 @@ export async function action(query?: EventsQuery): Promise<EventsProcessed> {
 
     const bounty = await (service.Actor as Network_v2).getBounty(bountyId);
     if (!bounty)
-      return logger.error(NETWORK_BOUNTY_NOT_FOUND(name, bountyId, network.networkAddress));
+      return logger.warn(NETWORK_BOUNTY_NOT_FOUND(name, bountyId, network.networkAddress));
 
     const dbBounty = await db.issues.findOne({
       where:{ issueId: bounty.cid, contractId: bountyId, network_id: network.id}})
     if (!dbBounty)
-      return logger.error(DB_BOUNTY_NOT_FOUND(name, bounty.cid, network.id));
+      return logger.warn(DB_BOUNTY_NOT_FOUND(name, bounty.cid, network.id));
 
     const pullRequest = bounty.pullRequests[pullRequestId];
 

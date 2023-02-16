@@ -8,9 +8,9 @@ import {BountyCanceledEvent} from "@taikai/dappkit/dist/src/interfaces/events/ne
 import {DB_BOUNTY_NOT_FOUND, NETWORK_BOUNTY_NOT_FOUND} from "../utils/messages.const";
 import {BlockProcessor} from "../interfaces/block-processor";
 import {Network_v2} from "@taikai/dappkit";
-import { handleBenefactors } from "src/modules/handle-benefactors";
+import {handleBenefactors} from "src/modules/handle-benefactors";
 import BigNumber from "bignumber.js";
-import { updateLeaderboardBounties } from "src/modules/leaderboard";
+import {updateLeaderboardBounties} from "src/modules/leaderboard";
 
 export const name = "getBountyCanceledEvents";
 export const schedule = "*/11 * * * *";
@@ -27,17 +27,17 @@ export async function action(
   const processor: BlockProcessor<BountyCanceledEvent> = async (block, network) => {
     const bounty = await (service.Actor as Network_v2).getBounty(block.returnValues.id);
     if (!bounty)
-      return logger.error(NETWORK_BOUNTY_NOT_FOUND(name, block.returnValues.id, network.networkAddress));
+      return logger.warn(NETWORK_BOUNTY_NOT_FOUND(name, block.returnValues.id, network.networkAddress));
 
     const dbBounty = await db.issues.findOne({
         where: { contractId: block.returnValues.id, issueId: bounty.cid, network_id: network.id, },
         include: [{ association: "token" }, { association: "repository" }, { association: "benefactors" }] ,});
 
     if (!dbBounty)
-      return logger.error(DB_BOUNTY_NOT_FOUND(name, bounty.cid, network.id));
+      return logger.warn(DB_BOUNTY_NOT_FOUND(name, bounty.cid, network.id));
 
     if (!dbBounty.githubId)
-      return logger.error(`${name} Bounty ${bounty.id} missing githubId`, bounty);
+      return logger.warn(`${name} Bounty ${bounty.id} missing githubId`, bounty);
 
     const [owner, repo] = slashSplit(dbBounty.repository.githubPath);
 

@@ -1,26 +1,28 @@
-import { Network_v2, Web3Connection } from "@taikai/dappkit";
-import { BountyProposalDisputedEvent } from "@taikai/dappkit/dist/src/interfaces/events/network-v2-events";
+import {Network_v2, Web3Connection} from "@taikai/dappkit";
+import {BountyProposalDisputedEvent} from "@taikai/dappkit/dist/src/interfaces/events/network-v2-events";
 import BigNumber from "bignumber.js";
 import db from "src/db";
-import { Block } from "src/interfaces/block-processor";
-import { EventService } from "src/services/event-service";
-import { NETWORK_BOUNTY_NOT_FOUND } from "src/utils/messages.const";
-import { updateCuratorProposalParams } from "./handle-curators";
-import { validateProposal } from "./proposal-validate-state";
+import {Block} from "src/interfaces/block-processor";
+import {EventService} from "src/services/event-service";
+import {NETWORK_BOUNTY_NOT_FOUND} from "src/utils/messages.const";
+import {updateCuratorProposalParams} from "./handle-curators";
+import {validateProposal} from "./proposal-validate-state";
 import logger from "src/utils/logger-handler";
 
 export async function disputeProcessor(block: Block & BountyProposalDisputedEvent, network, _service, isProposalRequired = true) {
-    const {bountyId, prId, proposalId,} = block.returnValues;
+  const {bountyId, prId, proposalId,} = block.returnValues;
 
-    const service = _service as EventService;
-    const Actor = service.Actor as Network_v2;
-  
-    const { from: actorAddress } = await (service.web3Connection as Web3Connection).Web3.eth.getTransaction(block.transactionHash)
-  
-    const bounty = await Actor.getBounty(bountyId);
+  logger.debug(`disputeProcessor(${[bountyId, prId, proposalId].join(', ')})`);
 
-    if (!bounty)
-      return logger.error(NETWORK_BOUNTY_NOT_FOUND('dispute-processor', bountyId, network.networkAddress));
+  const service = _service as EventService;
+  const Actor = service.Actor as Network_v2;
+
+  const {from: actorAddress} = await (service.web3Connection as Web3Connection).Web3.eth.getTransaction(block.transactionHash)
+
+  const bounty = await Actor.getBounty(bountyId);
+
+  if (!bounty)
+    return logger.warn(NETWORK_BOUNTY_NOT_FOUND('disputeProcessor', bountyId, network.networkAddress));
   
     const values = await validateProposal(bounty, prId, proposalId, network.id, isProposalRequired);
   

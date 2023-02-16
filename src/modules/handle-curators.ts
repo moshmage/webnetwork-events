@@ -1,6 +1,7 @@
 import BigNumber from "bignumber.js";
 import db from "src/db";
-import { curators } from "src/db/models/curators";
+import {curators} from "src/db/models/curators";
+import loggerHandler from "../utils/logger-handler";
 
 export async function handleCurators(
   address: string,
@@ -9,17 +10,18 @@ export async function handleCurators(
   networkId: number
 ) {
   const isCurator = BigNumber(totalVotes).gte(councilAmount);
-  const curatorInDb = await db.curators.findOne({ where: { address, networkId } });
+  const curatorInDb = await db.curators.findOne({where: {address, networkId}});
+
+  loggerHandler.debug(`handleCurators(${address}, ${totalVotes}, ${councilAmount}, ${networkId})`)
 
   if (curatorInDb) {
     curatorInDb.isCurrentlyCurator = isCurator;
     curatorInDb.tokensLocked = totalVotes
 
     await curatorInDb.save();
-
     return curatorInDb
   } else if (!curatorInDb) {
-   return await db.curators.create({
+    return await db.curators.create({
       address,
       networkId,
       isCurrentlyCurator: isCurator,

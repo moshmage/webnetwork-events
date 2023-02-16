@@ -1,13 +1,10 @@
 import db from "src/db";
 import logger from "src/utils/logger-handler";
-import {
-  EventsProcessed,
-  EventsQuery,
-} from "src/interfaces/block-chain-service";
-import { Network_v2, Web3Connection } from "@taikai/dappkit";
-import { getCoinPrice } from "src/services/coingecko";
+import {EventsProcessed, EventsQuery,} from "src/interfaces/block-chain-service";
+import {Network_v2, Web3Connection} from "@taikai/dappkit";
+import {getCoinPrice} from "src/services/coingecko";
 import BigNumber from "bignumber.js";
-import { Op } from "sequelize";
+import {Op} from "sequelize";
 
 export const name = "getPricesHeaderInformation";
 export const schedule = "*/15 * * * *";
@@ -96,14 +93,14 @@ export async function action(query?: EventsQuery): Promise<EventsProcessed> {
           } 
           await headerInformation.save();
         }
-  
-        eventsProcessed['header-information'] = networks ? networks.map(n => n.name): []
-        logger.info(`${name} updated Header values`)
+
+        eventsProcessed['header-information'] = networks ? networks.map(n => n.name) : []
+        logger.debug(`${name} updated Header values`)
       } else {
-        logger.error(`${name} error get coingecko values`)
+        logger.warn(`${name} error get coingecko values`)
       }
   } catch (err: any) {
-    logger.error(`${name} Error`, err?.message || err.toString());
+    logger.error(`${name} Error`, err);
   }
 
   return eventsProcessed;
