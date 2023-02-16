@@ -1,6 +1,6 @@
 import {cronModuleActions, getModules} from 'cron-module-actions';
 import {GlobalCatcher} from "./utils/global-catcher";
-import "elastic-apm-node/start"; // APM makes too much noise and can't correlate txs
+// import "elastic-apm-node/start"; // APM makes too much noise and can't correlate txs
 import Scribal from "./utils/scribal";
 
 GlobalCatcher();
