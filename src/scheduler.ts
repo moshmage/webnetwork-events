@@ -6,6 +6,7 @@ import Scribal from "./utils/scribal";
 GlobalCatcher();
 
 export default (async () => {
+  Scribal.i(`Scheduler starting...`);
   cronModuleActions(await getModules(`./dist/src/actions`));
 })()
   .catch(e => {
