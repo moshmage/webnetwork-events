@@ -15,4 +15,4 @@ TELEGRAM_CHANNELS=["@Channel1", "@Channel2"]
 Add the bot to the channel as you normally would by inviting it and making it admin
 
 ### Messages
-Can be edited in `src/integrations/telegram/messages.ts`
+Can be edited in [`src/integrations/telegram/messages.ts`](../../src/integrations/telegram/messages.ts)
