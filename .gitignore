@@ -16,5 +16,8 @@ dist/
 # ignore models inside database folder so we can keep the truth on the database
 db/*.cjs
 
-#ignore pem
+# ignore pem
 *.pem
+
+# logs
+logs/
