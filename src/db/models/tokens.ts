@@ -26,7 +26,7 @@ export class tokens extends Model<tokensAttributes, tokensCreationAttributes> im
   isTransactional!: boolean;
   isAllowed?: boolean;
   isReward!: boolean;
-  
+
   // tokens hasMany issues via tokenId
   issues!: issues[];
   getIssues!: Sequelize.HasManyGetAssociationsMixin<issues>;

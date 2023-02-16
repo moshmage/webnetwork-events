@@ -22,13 +22,13 @@ export async function action(query?: EventsQuery): Promise<EventsProcessed> {
 
     const bounty = await (service.Actor as Network_v2).getBounty(id);
     if (!bounty)
-      logger.error(NETWORK_BOUNTY_NOT_FOUND(name, id, network.networkAddress));
+      logger.warn(NETWORK_BOUNTY_NOT_FOUND(name, id, network.networkAddress));
     else {
       const dbBounty = await db.issues.findOne({
         where: {contractId: id, issueId: bounty.cid, network_id: network.id}});
 
       if (!dbBounty)
-        logger.error(DB_BOUNTY_NOT_FOUND(name, bounty.cid, network.id))
+        logger.warn(DB_BOUNTY_NOT_FOUND(name, bounty.cid, network.id))
       else {
         dbBounty.amount = bounty.tokenAmount.toString();
         await dbBounty.save();

@@ -1,4 +1,4 @@
-import {Network_v2, XEvents} from "@taikai/dappkit";
+import {Network_v2} from "@taikai/dappkit";
 import {BountyProposalDisputedEvent} from "@taikai/dappkit/dist/src/interfaces/events/network-v2-events";
 import logger from "../utils/logger-handler";
 import {NETWORK_BOUNTY_NOT_FOUND} from "../utils/messages.const";
@@ -11,9 +11,11 @@ import BigNumber from "bignumber.js";
 export async function proposalStateProcessor(block: BountyProposalDisputedEvent, network, _service, eventsProcessed, isProposalRequired = true) {
   const {bountyId, prId, proposalId,} = block.returnValues;
 
+  logger.debug(`proposalStateProcessor(${[bountyId, prId, proposalId].join(', ')})`);
+
   const bounty = await ((_service as EventService).Actor as Network_v2).getBounty(bountyId);
   if (!bounty)
-    return logger.error(NETWORK_BOUNTY_NOT_FOUND('proposal-state-processor', bountyId, network.networkAddress));
+    return logger.error(NETWORK_BOUNTY_NOT_FOUND('proposalStateProcessor', bountyId, network.networkAddress));
 
   const values = await validateProposal(bounty, prId, proposalId, network.id, isProposalRequired);
   if (!values?.dbBounty)
