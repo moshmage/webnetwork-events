@@ -1,6 +1,21 @@
+import {AMOUNT_AND_SYMBOL, NEW_BOUNTY} from "./messages-templates";
+
 const _url = (s) => `\n${process.env.WEBAPP_URL}${s}\n`;
 
-export const NEW_BOUNTY_OPEN = (priceAndCoin: string, url: string) => `New bounty for ${priceAndCoin}${_url(url)}`;
+const dbBountyUrl = (dbBounty: any) =>
+  `/${dbBounty.network.name}/${dbBounty.githubId}/${dbBounty.repository_id}`;
+
+const dbBountyPRUrl = (dbBounty: any, pr: any, prId) =>
+  `/${dbBounty.network.name}/pull-request?id=${prId}&repoId=${dbBounty.repository_id}&prId=${pr.githubId}`;
+
+const dbBountyProposalUrl = (dbBounty: any, proposal: any, proposalId: any) =>
+  `/${dbBounty.network.name}/proposal?id=${dbBounty.githubId}&repoId=${dbBounty.repository_id}&proposalId=${proposalId}`;
+
+const getAmountAndSymbol = (dbBounty: any) =>
+  AMOUNT_AND_SYMBOL({amount: dbBounty.amount, symbol: dbBounty.token.symbol})
+
+export const NEW_BOUNTY_OPEN = (dbBounty: any) =>
+  NEW_BOUNTY({dbBounty, url: _url(dbBountyUrl(dbBounty))});
 export const BOUNTY_STATE_CHANGED = (url: string, newState: string) => `Bounty changed to ${newState}${_url(url)}`;
 export const BOUNTY_AMOUNT_UPDATED = (url: string, newPrice: string) => `Bounty had its price changed to ${newPrice}${_url(url)}`;
 export const PULL_REQUEST_OPEN = (url: string) => `Bounty has a new PR${_url(url)}`;
