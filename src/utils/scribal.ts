@@ -28,7 +28,7 @@ export default (() => {
   const hostname = process.env.LOG_HOST_NAME || `localhost`;
 
   const scribal = new Scribal([]);
-  scribal.init({appName, hostname, version: '*', ...ScribalConfig});
+  scribal.init({appName, hostname, version: '*', ...ScribalConfig.logService});
 
   // scribal.addLogger(elasticLoggerMaker, ScribalConfig.logService.elastic);
 
