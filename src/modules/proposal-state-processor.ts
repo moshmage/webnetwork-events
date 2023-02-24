@@ -9,7 +9,6 @@ import db from "src/db";
 import BigNumber from "bignumber.js";
 import {sendMessageToTelegramChannels} from "../integrations/telegram";
 import {PROPOSAL_DISPUTED, PROPOSAL_DISPUTED_COMPLETE} from "../integrations/telegram/messages";
-import {dbBountyProposalUrl} from "../utils/db-bounty-url";
 
 export async function proposalStateProcessor(block: BountyProposalDisputedEvent, network, _service, eventsProcessed, isProposalRequired = true) {
   const {bountyId, prId, proposalId,} = block.returnValues;
@@ -47,9 +46,9 @@ export async function proposalStateProcessor(block: BountyProposalDisputedEvent,
   await dbBounty.save();
 
   if (!isDisputed)
-    sendMessageToTelegramChannels(PROPOSAL_DISPUTED(dbBountyProposalUrl(dbBounty, dbProposal, proposalId), (+dbProposal.disputeWeight - +oldWeight).toString()))
+    sendMessageToTelegramChannels(PROPOSAL_DISPUTED((+dbProposal.disputeWeight - +oldWeight).toString(), dbProposal.disputeWeight, dbBounty, dbProposal, proposalId,))
   else
-    sendMessageToTelegramChannels(PROPOSAL_DISPUTED_COMPLETE(dbBountyProposalUrl(dbBounty, dbProposal, proposalId)));
+    sendMessageToTelegramChannels(PROPOSAL_DISPUTED_COMPLETE(dbBounty, dbProposal, proposalId));
 
   eventsProcessed[network.name] = {...eventsProcessed[network.name], [dbBounty.issueId!.toString()]: {bounty: dbBounty, eventBlock: block}};
 

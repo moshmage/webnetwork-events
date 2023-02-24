@@ -9,8 +9,7 @@ import {BlockProcessor} from "../interfaces/block-processor";
 import {updateLeaderboardBounties} from "src/modules/leaderboard";
 import {updateBountiesHeader} from "src/modules/handle-header-information";
 import {sendMessageToTelegramChannels} from "../integrations/telegram";
-import {BOUNTY_STATE_CHANGED} from "../integrations/telegram/messages";
-import {dbBountyUrl} from "../utils/db-bounty-url";
+import {NEW_BOUNTY_OPEN} from "../integrations/telegram/messages";
 
 export const name = "getBountyCreatedEvents";
 export const schedule = "*/10 * * * *";
@@ -75,7 +74,7 @@ export async function action(query?: EventsQuery): Promise<EventsProcessed> {
 
     await updateLeaderboardBounties();
     await updateBountiesHeader();
-    sendMessageToTelegramChannels(BOUNTY_STATE_CHANGED(dbBountyUrl(dbBounty), dbBounty.state));
+    sendMessageToTelegramChannels(NEW_BOUNTY_OPEN(dbBounty));
 
     eventsProcessed[network.name] = {...eventsProcessed[network.name], [dbBounty.issueId!.toString()]: {bounty: dbBounty, eventBlock: block}};
 

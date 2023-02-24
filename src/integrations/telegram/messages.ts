@@ -1,28 +1,67 @@
-import {AMOUNT_AND_SYMBOL, NEW_BOUNTY} from "./messages-templates";
+import {
+  _BOUNTY_AMOUNT_UPDATED,
+  _BOUNTY_CLOSED,
+  _BOUNTY_FUNDED,
+  _BOUNTY_STATE_CHANGED,
+  _NEW_BOUNTY,
+  _PROPOSAL_CREATED,
+  _PROPOSAL_DISPUTED,
+  _PROPOSAL_DISPUTED_COMPLETE,
+  _PROPOSAL_READY,
+  _PULL_REQUEST_CANCELED,
+  _PULL_REQUEST_OPEN,
+  AMOUNT_AND_SYMBOL,
+} from "./messages-templates";
+import {dbBountyProposalUrl, dbBountyPRUrl, dbBountyUrl} from "../../utils/db-bounty-url";
+import {issues} from "../../db/models/issues";
+import {pull_requests} from "../../db/models/pull_requests";
+import {merge_proposals} from "../../db/models/merge_proposals";
 
 const _url = (s) => `\n${process.env.WEBAPP_URL}${s}\n`;
 
-const dbBountyUrl = (dbBounty: any) =>
-  `/${dbBounty.network.name}/${dbBounty.githubId}/${dbBounty.repository_id}`;
-
-const dbBountyPRUrl = (dbBounty: any, pr: any, prId) =>
-  `/${dbBounty.network.name}/pull-request?id=${prId}&repoId=${dbBounty.repository_id}&prId=${pr.githubId}`;
-
-const dbBountyProposalUrl = (dbBounty: any, proposal: any, proposalId: any) =>
-  `/${dbBounty.network.name}/proposal?id=${dbBounty.githubId}&repoId=${dbBounty.repository_id}&proposalId=${proposalId}`;
-
-const getAmountAndSymbol = (dbBounty: any) =>
+const getAmountAndSymbol = (dbBounty: issues) =>
   AMOUNT_AND_SYMBOL({amount: dbBounty.amount, symbol: dbBounty.token.symbol})
 
-export const NEW_BOUNTY_OPEN = (dbBounty: any) =>
-  NEW_BOUNTY({dbBounty, url: _url(dbBountyUrl(dbBounty))});
-export const BOUNTY_STATE_CHANGED = (url: string, newState: string) => `Bounty changed to ${newState}${_url(url)}`;
-export const BOUNTY_AMOUNT_UPDATED = (url: string, newPrice: string) => `Bounty had its price changed to ${newPrice}${_url(url)}`;
-export const PULL_REQUEST_OPEN = (url: string) => `Bounty has a new PR${_url(url)}`;
-export const PULL_REQUEST_CANCELED = (url: string) => `Bounty had its PR canceled${_url(url)}`;
-export const PROPOSAL_CREATED = (url: string) => `New proposal created${_url(url)}`;
-export const PROPOSAL_DISPUTED = (url: string, value: string) => `Proposal was appealed with ${value} votes${_url(url)}`;
-export const PROPOSAL_DISPUTED_COMPLETE = (url: string) => `Proposal was disputed${_url(url)}`;
-export const PROPOSAL_READY = (url: string) => `Proposal is ready to be closed${_url(url)}`;
-export const BOUNTY_CLOSED = (url: string) => `Bounty finished${_url(url)}`;
-export const BOUNTY_FUNDED = (url: string, funded: string, total: string) => `Funding bounty for ${funded} (of ${total})${_url(url)}`;
+export const NEW_BOUNTY_OPEN = (dbBounty: issues) =>
+  _NEW_BOUNTY({dbBounty, priceAndCoin: getAmountAndSymbol(dbBounty), url: _url(dbBountyUrl(dbBounty))});
+
+export const BOUNTY_STATE_CHANGED = (newState: string, dbBounty: issues) =>
+  _BOUNTY_STATE_CHANGED({newState, url: _url(dbBountyUrl(dbBounty)), dbBounty});
+
+export const BOUNTY_AMOUNT_UPDATED = (newPrice: string | number, dbBounty: issues) =>
+  _BOUNTY_AMOUNT_UPDATED({
+    newPrice,
+    url: _url(dbBountyUrl(dbBounty)),
+    priceAndCoin: getAmountAndSymbol(dbBounty),
+    dbBounty
+  });
+
+export const PULL_REQUEST_OPEN = (dbBounty: issues, pr: pull_requests, prId: string | number) =>
+  _PULL_REQUEST_OPEN({url: _url(dbBountyPRUrl(dbBounty, pr, prId)), dbBounty, pr});
+
+export const PULL_REQUEST_CANCELED = (dbBounty: issues, pr: pull_requests, prId: string | number) =>
+  _PULL_REQUEST_CANCELED({url: _url(dbBountyPRUrl(dbBounty, pr, prId)), dbBounty, pr});
+
+export const PROPOSAL_CREATED = (dbBounty: issues, proposal: merge_proposals, proposalId) =>
+  _PROPOSAL_CREATED({url: _url(dbBountyProposalUrl(dbBounty, proposal, proposalId)), dbBounty, proposal});
+
+export const PROPOSAL_DISPUTED = (value: string, votes: string, dbBounty: issues, proposal: merge_proposals, proposalId: string | number) =>
+  _PROPOSAL_DISPUTED({
+    url: _url(dbBountyProposalUrl(dbBounty, proposal, proposalId)),
+    value,
+    votes,
+    dbBounty,
+    proposal
+  });
+
+export const PROPOSAL_DISPUTED_COMPLETE = (dbBounty: issues, proposal: merge_proposals, proposalId: string | number) =>
+  _PROPOSAL_DISPUTED_COMPLETE({url: _url(dbBountyProposalUrl(dbBounty, proposal, proposalId)), dbBounty, proposal});
+
+export const PROPOSAL_READY = (dbBounty: issues, proposal: merge_proposals, proposalId: string | number) =>
+  _PROPOSAL_READY({url: _url(dbBountyProposalUrl(dbBounty, proposal, proposalId)), dbBounty, proposal});
+
+export const BOUNTY_CLOSED = (dbBounty: issues, proposal: merge_proposals, proposalId: string | number) =>
+  _BOUNTY_CLOSED({url: _url(dbBountyProposalUrl(dbBounty, proposal, proposalId)), dbBounty, proposal});
+
+export const BOUNTY_FUNDED = (funded: string, total: string, dbBounty: issues) =>
+  _BOUNTY_FUNDED({url: _url(dbBountyUrl(dbBounty)), dbBounty, total, funded});

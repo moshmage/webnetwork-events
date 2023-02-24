@@ -13,7 +13,6 @@ import BigNumber from "bignumber.js";
 import {updateLeaderboardBounties} from "src/modules/leaderboard";
 import {sendMessageToTelegramChannels} from "../integrations/telegram";
 import {BOUNTY_STATE_CHANGED} from "../integrations/telegram/messages";
-import {dbBountyUrl} from "../utils/db-bounty-url";
 
 export const name = "getBountyCanceledEvents";
 export const schedule = "*/11 * * * *";
@@ -55,7 +54,7 @@ export async function action(
     }
 
     await dbBounty.save();
-    sendMessageToTelegramChannels(BOUNTY_STATE_CHANGED(dbBountyUrl(dbBounty), dbBounty.state));
+    sendMessageToTelegramChannels(BOUNTY_STATE_CHANGED(dbBounty.state, dbBounty));
 
     await updateLeaderboardBounties("canceled");
 

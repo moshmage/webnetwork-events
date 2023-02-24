@@ -13,7 +13,6 @@ import {updateCuratorProposalParams} from "src/modules/handle-curators";
 import {updateLeaderboardBounties, updateLeaderboardProposals} from "src/modules/leaderboard";
 import {sendMessageToTelegramChannels} from "../integrations/telegram";
 import {BOUNTY_CLOSED} from "../integrations/telegram/messages";
-import {dbBountyProposalUrl} from "../utils/db-bounty-url";
 
 export const name = "getBountyClosedEvents";
 export const schedule = "*/12 * * * *";
@@ -127,7 +126,7 @@ export async function action(
     dbBounty.state = "closed";
     await dbBounty.save();
 
-    sendMessageToTelegramChannels(BOUNTY_CLOSED(dbBountyProposalUrl(dbBounty, dbProposal, proposalId)));
+    sendMessageToTelegramChannels(BOUNTY_CLOSED(dbBounty, dbProposal, proposalId));
 
     await updateUserPayments(bounty.proposals[+proposalId], block.transactionHash, dbBounty.id, bounty.tokenAmount);
 

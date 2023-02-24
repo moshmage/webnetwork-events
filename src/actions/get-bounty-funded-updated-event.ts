@@ -10,7 +10,6 @@ import BigNumber from "bignumber.js";
 import {handleBenefactors} from "src/modules/handle-benefactors";
 import {sendMessageToTelegramChannels} from "../integrations/telegram";
 import {BOUNTY_FUNDED} from "../integrations/telegram/messages";
-import {dbBountyUrl} from "../utils/db-bounty-url";
 
 export const name = "getBountyFundedEvents";
 export const schedule = "*/14 * * * *";
@@ -46,7 +45,7 @@ export async function action(query?: EventsQuery): Promise<EventsProcessed> {
 
     await dbBounty.save();
 
-    sendMessageToTelegramChannels(BOUNTY_FUNDED(dbBountyUrl(dbBounty), `${amount}${dbBounty.token.symbol}`, `${bounty.fundingAmount}${dbBounty.token.symbol}`))
+    sendMessageToTelegramChannels(BOUNTY_FUNDED(`${amount}${dbBounty.token.symbol}`, `${bounty.fundingAmount}${dbBounty.token.symbol}`, dbBounty))
 
     eventsProcessed[network.name] = {...eventsProcessed[network.name], [dbBounty.issueId!.toString()]: {bounty: dbBounty, eventBlock: block}};
   }
