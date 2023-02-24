@@ -71,8 +71,9 @@ export async function action(
     if (!["canceled", "closed", "proposal"].includes(dbBounty.state!)) {
       dbBounty.state = "proposal";
       await dbBounty.save();
+
       sendMessageToTelegramChannels(BOUNTY_STATE_CHANGED(dbBounty.state, dbBounty))
-      sendMessageToTelegramChannels(PROPOSAL_CREATED(dbBounty, dbProposal, proposalId))
+      sendMessageToTelegramChannels(PROPOSAL_CREATED(dbBounty, createProposal, proposalId))
     }
 
     await updateLeaderboardProposals();

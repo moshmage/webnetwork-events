@@ -1,5 +1,5 @@
 import TelegramBot from "./telegram-bot";
-import {Logger} from "../../utils/logger-handler";
+import Logger from "../../utils/logger-handler";
 
 export function sendMessageToTelegramChannels(message: string, moreChannels: string[] = []) {
   if (!process.env.TELEGRAM_CHANNELS) {

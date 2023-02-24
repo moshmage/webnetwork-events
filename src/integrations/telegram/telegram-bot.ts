@@ -1,5 +1,5 @@
 import {Telegraf} from "telegraf";
-import {Logger} from "../../utils/logger-handler";
+import Logger from "../../utils/logger-handler";
 
 export default (() => {
   if (!process.env.TELEGRAM_TOKEN) {
