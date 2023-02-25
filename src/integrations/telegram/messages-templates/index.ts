@@ -3,7 +3,7 @@ import * as Handlebars from "handlebars";
 import {readFileSync} from "fs";
 
 const env_folder = process.env.TELEGRAM_TEMPLATE_FOLDER;
-const folder = env_folder || `./src/messages/integrations/telegram/messages-templates`;
+const folder = env_folder || `./src/messages/integrations/telegram/messages-templates/`;
 const file = (template: string) => `${folder}${template}`
 
 export const _NEW_BOUNTY = (info) =>
