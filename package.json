@@ -9,7 +9,7 @@
     "test": "echo \"Error: no test specified\" && exit 1",
     "start:server": "node ./dist/src/server.js",
     "start:cron": "node ./dist/src/scheduler.js",
-    "build": "rimraf ./build && tsc --project tsconfig.json && tsc-alias -p tsconfig.json",
+    "build": "rimraf ./build && tsc --project tsconfig.json && tsc-alias -p tsconfig.json && cpx ./src/integrations/telegram/messages-templates/**.hbs ./dist/src/integrations/telegram/message-templates",
     "dev": "ts-node-dev -r tsconfig-paths/register --ignore-watch node_modules --respawn --transpile-only ./src/server.ts",
     "dev-scheduler": "ts-node-dev -r tsconfig-paths/register --ignore-watch node_modules --respawn --transpile-only ./src/scheduler.ts",
     "dev:debug": "ts-node-dev -r tsconfig-paths/register --inspect=0.0.0.0:9230 --notify --poll --respawn --transpile-only ./src/server.ts"
@@ -56,6 +56,7 @@
     "@types/express": "^4.17.13",
     "@types/node": "^18.7.9",
     "@types/uuid": "^8.3.4",
+    "cpx": "^1.5.0",
     "ts-node-dev": "^2.0.0",
     "tsc-alias": "^1.7.0",
     "tsconfig-paths": "^4.1.0",
