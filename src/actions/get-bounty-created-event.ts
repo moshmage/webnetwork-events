@@ -75,7 +75,10 @@ export async function action(query?: EventsQuery): Promise<EventsProcessed> {
     await updateLeaderboardBounties();
     await updateBountiesHeader();
 
-    const _dbBounty = await db.issues.findOne({where: {id: dbBounty.id,}, include: [{association: 'token'}]})
+    const _dbBounty = await db.issues.findOne({
+      where: {id: dbBounty.id,},
+      include: [{association: 'token'}, {association: 'network'}]
+    })
     sendMessageToTelegramChannels(NEW_BOUNTY_OPEN(_dbBounty!));
 
     eventsProcessed[network.name] = {

@@ -47,16 +47,18 @@ export async function action(
 
    const createProposal = await db.merge_proposals.create({
       refusedByBountyOwner: proposal.refusedByBountyOwner,
-      disputeWeight: new BigNumber(proposal.disputeWeight).toFixed(),
-      contractCreationDate: proposal.creationDate.toString(),
-      issueId: dbBounty.id,
-      pullRequestId: dbPullRequest.id,
-      githubLogin: dbUser?.githubLogin,
-      creator: proposal.creator,
-      isDisputed: false,
-      contractId: proposal.id,
-      network_id: network?.id
-    });
+     disputeWeight: new BigNumber(proposal.disputeWeight).toFixed(),
+     contractCreationDate: proposal.creationDate.toString(),
+     issueId: dbBounty.id,
+     pullRequestId: dbPullRequest.id,
+     githubLogin: dbUser?.githubLogin,
+     creator: proposal.creator,
+     isDisputed: false,
+     contractId: proposal.id,
+     network_id: network?.id
+   });
+
+    sendMessageToTelegramChannels(PROPOSAL_CREATED(dbBounty, createProposal, proposalId))
 
     if (createProposal) {
       await Promise.all(proposal.details.map(async (detail) =>
@@ -73,7 +75,6 @@ export async function action(
       await dbBounty.save();
 
       sendMessageToTelegramChannels(BOUNTY_STATE_CHANGED(dbBounty.state, dbBounty))
-      sendMessageToTelegramChannels(PROPOSAL_CREATED(dbBounty, createProposal, proposalId))
     }
 
     await updateLeaderboardProposals();

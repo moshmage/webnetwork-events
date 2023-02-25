@@ -11,13 +11,13 @@ import {
   _PULL_REQUEST_CANCELED,
   _PULL_REQUEST_OPEN,
   AMOUNT_AND_SYMBOL,
-} from "./messages-templates";
+} from "./message-template";
 import {dbBountyProposalUrl, dbBountyPRUrl, dbBountyUrl} from "../../utils/db-bounty-url";
 import {issues} from "../../db/models/issues";
 import {pull_requests} from "../../db/models/pull_requests";
 import {merge_proposals} from "../../db/models/merge_proposals";
 
-const _url = (s) => `\n${process.env.WEBAPP_URL}${s}\n`;
+const _url = (s) => `${process.env.WEBAPP_URL}${s}`;
 
 const getAmountAndSymbol = (dbBounty: issues) =>
   AMOUNT_AND_SYMBOL({amount: dbBounty.amount, symbol: dbBounty.token?.symbol})
