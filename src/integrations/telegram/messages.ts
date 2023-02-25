@@ -20,7 +20,7 @@ import {merge_proposals} from "../../db/models/merge_proposals";
 const _url = (s) => `\n${process.env.WEBAPP_URL}${s}\n`;
 
 const getAmountAndSymbol = (dbBounty: issues) =>
-  AMOUNT_AND_SYMBOL({amount: dbBounty.amount, symbol: dbBounty.token.symbol})
+  AMOUNT_AND_SYMBOL({amount: dbBounty.amount, symbol: dbBounty.token?.symbol})
 
 export const NEW_BOUNTY_OPEN = (dbBounty: issues) =>
   _NEW_BOUNTY({dbBounty, priceAndCoin: getAmountAndSymbol(dbBounty), url: _url(dbBountyUrl(dbBounty))});
