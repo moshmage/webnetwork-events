@@ -26,9 +26,9 @@ export class BlockSniffer {
    * @param web3Host {string} the URL of the web3 host to connect to
    * @param mappedEventActions {MappedEventActions} contract addresses and its abi to lookout for
    * @param startBlock {number} start block to query the web3Host on next pass
-   * @param interval {number} interval between chain queries
+   * @param interval {number} interval between chain queries, in milliseconds
    * @param pagesPerRequest {number} number of pages to read per request
-   * @param autoStart {boolean} milliseconds
+   * @param autoStart {boolean} should the sniffer auto-start immediately
    */
   constructor(readonly web3Host: string,
               readonly mappedEventActions: MappedEventActions,
@@ -42,7 +42,7 @@ export class BlockSniffer {
     this.#connection.start();
 
     if (autoStart)
-      this.start()
+      this.start(true)
   }
 
   get currentBlock() {
@@ -59,12 +59,11 @@ export class BlockSniffer {
     const requests = (targetBlock - this.#currentBlock) / this.pagesPerRequest;
     const logs: Log[] = [];
     const _eth = this.#connection.eth;
-
-    const address = Object.keys(this.mappedEventActions);
-
     const mappedAbiEventsAddress = {};
 
-    const topics =
+    const address = Object.keys(this.mappedEventActions); // no need for new Set() because objects can't have dupes
+
+    const topics = [...new Set( // use new Set() to remove dupes and then destroy it because we don't need a set
       Object.entries(this.mappedEventActions)
         .map(([a, {abi, events}], i) =>
           Object.keys(events)
@@ -78,21 +77,25 @@ export class BlockSniffer {
               }
               return topic as string;
             })
-        ).flat();
+        ).flat()
+    )];
 
 
-    loggerHandler.log(`${this.web3Host} Reading from ${this.#currentBlock} to ${targetBlock}; Will total ${requests < 1 ? 1 : Math.round(requests)} requests`);
+    loggerHandler.info(`${this.web3Host} Reading from ${this.#currentBlock} to ${targetBlock}; Will total ${requests < 1 ? 1 : Math.round(requests)} requests`);
+    loggerHandler.debug(`Searching for topics and addresses`, topics, address);
 
     let toBlock = 0;
     for (let fromBlock = this.#currentBlock; fromBlock < targetBlock; fromBlock += this.pagesPerRequest) {
       toBlock = fromBlock + this.pagesPerRequest > targetBlock ? targetBlock : fromBlock + this.pagesPerRequest;
 
-      loggerHandler.log(`${this.web3Host} Fetching events from ${fromBlock} to ${toBlock}`, {topics});
+      loggerHandler.log(`${this.web3Host} Fetching events from ${fromBlock} to ${toBlock}`);
 
       logs.push(...await _eth.getPastLogs({fromBlock, toBlock, topics, address}));
 
       this.#currentBlock = toBlock;
     }
+
+    loggerHandler.info(`${this.web3Host} found ${logs.length} logs`)
 
 
     return logs.map(log => {
@@ -105,9 +108,9 @@ export class BlockSniffer {
           returnValues: _eth.abi.decodeLog(event.inputs, log.data, log.topics.slice(1))
         });
       })
-      .filter(log => (log as any).eventName)
+      .filter(log => log.eventName)
       .reduce((p, c) => {
-        const eventName = (c as Log & { eventName: string; returnValues: any }).eventName as string;
+        const eventName = c.eventName;
         const address = c.address;
         return ({...p, [address]: {...(p[address] || {}), [eventName]: [...(p[address][eventName] || []), c]}})
       });
