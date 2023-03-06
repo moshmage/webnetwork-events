@@ -57,12 +57,19 @@ async function closePullRequests(bounty, mergedPullRequestId, network_id) {
 
 async function updateUserPayments(proposal, transactionHash, issueId, tokenAmount) {
   return Promise.all(
-    proposal.details.map(async (detail) =>
-      db.users_payments.create({
+    proposal.details.map(async (detail) => {
+      const payment = {
         address: detail?.["recipient"],
         ammount:
           Number((detail?.["percentage"] / 100) * +tokenAmount) || 0,
-        issueId, transactionHash,})));
+        issueId, 
+        transactionHash,
+      }
+      return db.users_payments.findOrCreate({
+        where: payment,
+        defaults: payment
+       })
+    }))
 }
 
 async function updateCuratorProposal(address: string, networkId: number) {
