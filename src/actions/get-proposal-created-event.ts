@@ -9,6 +9,8 @@ import {BlockProcessor} from "../interfaces/block-processor";
 import {Network_v2} from "@taikai/dappkit";
 import BigNumber from "bignumber.js";
 import {updateLeaderboardProposals} from "src/modules/leaderboard";
+import {sendMessageToTelegramChannels} from "../integrations/telegram";
+import {BOUNTY_STATE_CHANGED, PROPOSAL_CREATED} from "../integrations/telegram/messages";
 
 export const name = "getBountyProposalCreatedEvents";
 export const schedule = "*/13 * * * *";
@@ -45,16 +47,18 @@ export async function action(
 
    const createProposal = await db.merge_proposals.create({
       refusedByBountyOwner: proposal.refusedByBountyOwner,
-      disputeWeight: new BigNumber(proposal.disputeWeight).toFixed(),
-      contractCreationDate: proposal.creationDate.toString(),
-      issueId: dbBounty.id,
-      pullRequestId: dbPullRequest.id,
-      githubLogin: dbUser?.githubLogin,
-      creator: proposal.creator,
-      isDisputed: false,
-      contractId: proposal.id,
-      network_id: network?.id
-    });
+     disputeWeight: new BigNumber(proposal.disputeWeight).toFixed(),
+     contractCreationDate: proposal.creationDate.toString(),
+     issueId: dbBounty.id,
+     pullRequestId: dbPullRequest.id,
+     githubLogin: dbUser?.githubLogin,
+     creator: proposal.creator,
+     isDisputed: false,
+     contractId: proposal.id,
+     network_id: network?.id
+   });
+
+    sendMessageToTelegramChannels(PROPOSAL_CREATED(dbBounty, createProposal, proposalId))
 
     if (createProposal) {
       await Promise.all(proposal.details.map(async (detail) =>
@@ -69,6 +73,8 @@ export async function action(
     if (!["canceled", "closed", "proposal"].includes(dbBounty.state!)) {
       dbBounty.state = "proposal";
       await dbBounty.save();
+
+      sendMessageToTelegramChannels(BOUNTY_STATE_CHANGED(dbBounty.state, dbBounty))
     }
 
     await updateLeaderboardProposals();

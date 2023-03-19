@@ -11,6 +11,8 @@ import {Network_v2} from "@taikai/dappkit";
 import {handleBenefactors} from "src/modules/handle-benefactors";
 import BigNumber from "bignumber.js";
 import {updateLeaderboardBounties} from "src/modules/leaderboard";
+import {sendMessageToTelegramChannels} from "../integrations/telegram";
+import {BOUNTY_STATE_CHANGED} from "../integrations/telegram/messages";
 
 export const name = "getBountyCanceledEvents";
 export const schedule = "*/11 * * * *";
@@ -49,9 +51,10 @@ export async function action(
     if(bounty.funding.length > 0){
       await handleBenefactors(bounty.funding, dbBounty, "delete" , name)
       dbBounty.fundedAmount = bounty.funding.reduce((prev, current) => prev.plus(current.amount), BigNumber(0)).toFixed()
-    } 
-    
+    }
+
     await dbBounty.save();
+    sendMessageToTelegramChannels(BOUNTY_STATE_CHANGED(dbBounty.state, dbBounty));
 
     await updateLeaderboardBounties("canceled");
 

@@ -11,6 +11,8 @@ import {BlockProcessor} from "../interfaces/block-processor";
 import {Network_v2} from "@taikai/dappkit";
 import {updateCuratorProposalParams} from "src/modules/handle-curators";
 import {updateLeaderboardBounties, updateLeaderboardProposals} from "src/modules/leaderboard";
+import {sendMessageToTelegramChannels} from "../integrations/telegram";
+import {BOUNTY_CLOSED} from "../integrations/telegram/messages";
 
 export const name = "getBountyClosedEvents";
 export const schedule = "*/12 * * * *";
@@ -62,7 +64,7 @@ async function updateUserPayments(proposal, transactionHash, issueId, tokenAmoun
         address: detail?.["recipient"],
         ammount:
           Number((detail?.["percentage"] / 100) * +tokenAmount) || 0,
-        issueId, 
+        issueId,
         transactionHash,
       }
       return db.users_payments.findOrCreate({
@@ -123,6 +125,8 @@ export async function action(
     dbBounty.merged = dbProposal?.contractId as any;
     dbBounty.state = "closed";
     await dbBounty.save();
+
+    sendMessageToTelegramChannels(BOUNTY_CLOSED(dbBounty, dbProposal, proposalId));
 
     await updateUserPayments(bounty.proposals[+proposalId], block.transactionHash, dbBounty.id, bounty.tokenAmount);
 

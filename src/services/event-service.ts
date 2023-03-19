@@ -178,7 +178,7 @@ export class EventService<E = any> {
       loggerHandler.info(`${this.name} finished`);
 
     } catch (e: any) {
-      loggerHandler.error(`${this.name} Error`, {error: e?.message || e.toString()});
+      loggerHandler.error(`${this.name} Error`, e?.message || e.toString(), e.stack);
     }
   }
 

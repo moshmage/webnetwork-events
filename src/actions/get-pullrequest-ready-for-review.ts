@@ -6,6 +6,8 @@ import {BountyPullRequestReadyForReviewEvent} from "@taikai/dappkit/dist/src/int
 import {DB_BOUNTY_NOT_FOUND, NETWORK_BOUNTY_NOT_FOUND} from "../utils/messages.const";
 import {BlockProcessor} from "../interfaces/block-processor";
 import {Network_v2} from "@taikai/dappkit";
+import {sendMessageToTelegramChannels} from "../integrations/telegram";
+import {BOUNTY_STATE_CHANGED} from "../integrations/telegram/messages";
 
 export const name = "getBountyPullRequestReadyForReviewEvents";
 export const schedule = "*/12 * * * *";
@@ -46,6 +48,7 @@ export async function action(query?: EventsQuery): Promise<EventsProcessed> {
     if (!["canceled", "closed", "proposal"].includes(dbBounty.state!)) {
       dbBounty.state = "ready";
       await dbBounty.save();
+      sendMessageToTelegramChannels(BOUNTY_STATE_CHANGED(`ready`, dbBounty));
     }
 
     eventsProcessed[network.name] = {...eventsProcessed[network.name], [dbBounty.issueId!.toString()]: {bounty: dbBounty, eventBlock: block}};

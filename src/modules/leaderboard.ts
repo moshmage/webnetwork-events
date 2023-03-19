@@ -34,7 +34,6 @@ async function updateLeaderboardRow(address: string, property: string, value: nu
  */
 async function updateLeaderboardBounties(state: "opened" | "canceled" | "closed" = "opened") {
   const name = `updateLeaderboardBounties(${state})`;
-  logger.info(name);
 
   try {
     const bountiesOfCreators = await db.issues.findAll({

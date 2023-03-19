@@ -1,7 +1,7 @@
-import { Router } from "express";
+import {Router} from "express";
 
-import { eventsRouter } from "./events.routes";
-import { seoRoutes } from "./seo.routes";
+import {eventsRouter} from "./events.routes";
+import {seoRoutes} from "./seo.routes";
 
 const router = Router();
 

@@ -6,6 +6,8 @@ import {BountyAmountUpdatedEvent} from "@taikai/dappkit/dist/src/interfaces/even
 import {DB_BOUNTY_NOT_FOUND, NETWORK_BOUNTY_NOT_FOUND} from "../utils/messages.const";
 import {BlockProcessor} from "../interfaces/block-processor";
 import {Network_v2} from "@taikai/dappkit";
+import {sendMessageToTelegramChannels} from "../integrations/telegram";
+import {BOUNTY_AMOUNT_UPDATED} from "../integrations/telegram/messages";
 
 export const name = "getBountyAmountUpdatedEvents";
 export const schedule = "*/13 * * * *";
@@ -25,15 +27,19 @@ export async function action(query?: EventsQuery): Promise<EventsProcessed> {
       logger.warn(NETWORK_BOUNTY_NOT_FOUND(name, id, network.networkAddress));
     else {
       const dbBounty = await db.issues.findOne({
-        where: {contractId: id, issueId: bounty.cid, network_id: network.id}});
+        where: {contractId: id, issueId: bounty.cid, network_id: network.id}, include: [{association: 'token'}]
+      });
 
       if (!dbBounty)
         logger.warn(DB_BOUNTY_NOT_FOUND(name, bounty.cid, network.id))
       else {
         dbBounty.amount = bounty.tokenAmount.toString();
         await dbBounty.save();
-
-        eventsProcessed[network.name] = {...eventsProcessed[network.name], [dbBounty.issueId!.toString()]: {bounty: dbBounty, eventBlock: block}};
+        sendMessageToTelegramChannels(BOUNTY_AMOUNT_UPDATED(dbBounty.amount, dbBounty))
+        eventsProcessed[network.name] = {
+          ...eventsProcessed[network.name],
+          [dbBounty.issueId!.toString()]: {bounty: dbBounty, eventBlock: block}
+        };
       }
     }
   }
