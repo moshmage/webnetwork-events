@@ -3,7 +3,7 @@ import logger from "src/utils/logger-handler";
 import {EventsProcessed, EventsQuery,} from "src/interfaces/block-chain-service";
 import {DB_BOUNTY_NOT_FOUND} from "../utils/messages.const";
 import {DecodedLog} from "../interfaces/block-sniffer";
-import {getBountyFromChain, getNetwork} from "../utils/block-process";
+import {getBountyFromChain, getNetwork,parseLogWithContext} from "../utils/block-process";
 import {sendMessageToTelegramChannels} from "../integrations/telegram";
 import {BOUNTY_AMOUNT_UPDATED} from "../integrations/telegram/messages";
 
@@ -40,7 +40,7 @@ export async function action(block: DecodedLog, query?: EventsQuery): Promise<Ev
   sendMessageToTelegramChannels(BOUNTY_AMOUNT_UPDATED(dbBounty.amount, dbBounty));
 
   eventsProcessed[network.name!] = {
-    [dbBounty.issueId!.toString()]: {bounty: dbBounty, eventBlock: {...block, connection: undefined}}
+    [dbBounty.issueId!.toString()]: {bounty: dbBounty, eventBlock: parseLogWithContext(block)}
   };
 
 

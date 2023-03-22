@@ -19,6 +19,14 @@ export class BlockSniffer {
     return this.#currentBlock;
   }
 
+  get actingChainId() {
+    return this.#actingChainId;
+  }
+
+  protected set currentBlock(block: number) {
+    this.#currentBlock = block;
+  }
+
   /**
    *
    * @param web3Host {string} the URL of the web3 host to connect to
@@ -32,7 +40,7 @@ export class BlockSniffer {
    */
   constructor(readonly web3Host: string,
               readonly mappedEventActions: MappedEventActions,
-              startBlock: number = 0,
+              readonly startBlock: number = 0,
               readonly targetBlock = 0,
               readonly query: EventsQuery | null = null,
               readonly interval: number = 60 * 1000, // 60s
@@ -62,7 +70,6 @@ export class BlockSniffer {
       poll();
     });
   }
-
 
   /**
    * Loop decoded logs and search for a matching address and event, if found: try-catch the callback with the
@@ -185,9 +192,10 @@ export class BlockSniffer {
     loggerHandler.info(`BlockSniffer (chain:${this.#actingChainId}) found ${logs.length} logs`);
 
     return logs.map(log => {
-        const event = mappedAbiEventsAddress[log.address]?.[log.topics?.[0]];
+        const logAddress = log.address?.toLowerCase();
+        const event = mappedAbiEventsAddress[logAddress]?.[log.topics?.[0]];
         if (!event)
-          return {[log.address]: {[log.topics[0]]: [log]}} as any;
+          return {[logAddress]: {[log.topics[0]]: [log]}} as any;
         return ({
           ...log,
           eventName: event.name as string,
@@ -197,7 +205,7 @@ export class BlockSniffer {
       .filter(log => log.eventName)
       .reduce((p, c) => {
         const eventName = c.eventName;
-        const address = c.address;
+        const address = c.address?.toLowerCase();
         return ({...p, [address]: {...(p[address] || {}), [eventName]: [...(p?.[address]?.[eventName] || []), c]}})
       }, {});
   }
@@ -212,10 +220,10 @@ export class BlockSniffer {
     loggerHandler.debug(`BlockSniffer (chain:${this.#actingChainId}) cleared interval`);
   }
 
-  private async saveCurrentBlock(currentBlock = 0) {
+  protected async saveCurrentBlock(currentBlock = 0) {
     db.chain_events.findOrCreate({
-        where: {name: this.web3Host},
-        defaults: {name: 'global', lastBlock: currentBlock, chain_id: this.#actingChainId}
+        where: { name: "global", chain_id: this.#actingChainId },
+        defaults: { name: "global", lastBlock: currentBlock, chain_id: this.#actingChainId }
       })
       .then(([event, created]) => {
         if (!created) {
@@ -227,11 +235,13 @@ export class BlockSniffer {
       })
   }
 
-  private async prepareCurrentBlock() {
-    this.#currentBlock =
-      (await db.chain_events.findOne({where: {chain_id: this.#actingChainId}, raw: true}))?.lastBlock ||
-      +(process.env?.BULK_CHAIN_START_BLOCK || 0);
+  protected async prepareCurrentBlock() {
+    this.#currentBlock = Math.max(
+      (await db.chain_events.findOne({where: {chain_id: this.actingChainId}, raw: true}))?.lastBlock || 0,
+      +(process.env?.BULK_CHAIN_START_BLOCK || 0),
+      this.startBlock
+    );
+
     loggerHandler.debug(`BlockSniffer (chain:${this.#actingChainId}) currentBlock prepared as ${this.#currentBlock}`);
   }
-
 }
