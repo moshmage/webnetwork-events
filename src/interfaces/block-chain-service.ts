@@ -6,6 +6,10 @@ export type BlockQuery = {
   to: number;
 };
 
+export type BountyQuery = {
+  issueId?: string;
+};
+
 export interface EventsPerNetwork<T = any> {
   network: Partial<NetworkProps>;
   registry?: any;
@@ -14,7 +18,10 @@ export interface EventsPerNetwork<T = any> {
 
 export interface EventsQuery {
   networkName: string;
+  address: string;
+  chainId: string;
   blockQuery: BlockQuery;
+  bountyQuery: BountyQuery;
 }
 
 export type BountiesProcessed = {

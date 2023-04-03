@@ -15,8 +15,9 @@ import { action as getPullRequestCanceled } from "src/actions/get-pullrequest-ca
 import { action as getPullRequestCreated } from "src/actions/get-pullrequest-created-event";
 import { action as getPullRequestReadyForReview } from "src/actions/get-pullrequest-ready-for-review";
 import { action as getOraclesTransferEvents } from "src/actions/get-oracles-transfer-events";
-import { action as getTransferEvents } from "src/actions/get-transfer-bounty-token-events";
 import { action as UpdateBountiesToDraft } from 'src/actions/update-bounties-to-draft'
+import { action as updateNetworkParameters } from "src/actions/update-network-parameters";
+import { action as getBountyRewardWithdraw } from "src/actions/get-bounty-reward-withdraw";
 
 import {
   BountiesProcessed,
@@ -39,7 +40,8 @@ const events = {
     updated: getBountyAmountUpdate,
     funded: getBountyFundedUpdate,
     "moved-to-open": getBountyMovedToOpen,
-    'update-draft-time': UpdateBountiesToDraft
+    'update-draft-time': UpdateBountiesToDraft,
+    "withdraw": getBountyRewardWithdraw
   },
   oracles: {
     changed: getOraclesChangedEvents,
@@ -59,13 +61,14 @@ const events = {
     changed: getChangeAllowedTokens,
     registered: getNetworkCreatedEvents,
   },
-  bountyToken: {
-    transfer: getTransferEvents
+  network: {
+    "parameters": updateNetworkParameters
   }
 };
 
 eventsRouter.get("/:entity/:event", async (req, res) => {
   try {
+
     const { entity, event } = req.params;
 
     if (!events[entity][event])
