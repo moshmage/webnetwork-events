@@ -15,7 +15,7 @@ router.use(`/read/`, readRouter);
 
 router.use("/", async (req, res) => {
   const info = await getChainsRegistryAndNetworks();
-  return res.status(200).json({info, chainId: process.env.EVENTS_CHAINID || `all`});
+  return res.status(200).json({info, chainId: process.env.EVENTS_CHAIN_ID || `all`});
 });
 
 export {router};
