@@ -14,7 +14,8 @@ router.use("/past-events", eventsRouter);
 router.use(`/read/`, readRouter);
 
 router.use("/", async (req, res) => {
-  return res.status(200).json(await getChainsRegistryAndNetworks());
+  const info = await getChainsRegistryAndNetworks();
+  return res.status(200).json({info, chainId: process.env.EVENTS_CHAINID || `all`});
 });
 
 export {router};
