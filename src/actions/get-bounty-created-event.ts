@@ -12,6 +12,7 @@ import {isAddress} from "web3-utils";
 import {DecodedLog} from "../interfaces/block-sniffer";
 import {getBountyFromChain, getNetwork, parseLogWithContext} from "../utils/block-process";
 import {BountyCreatedEvent} from "@taikai/dappkit/dist/src/interfaces/events/network-v2-events";
+import { Sequelize, WhereOptions } from "sequelize";
 
 export const name = "getBountyCreatedEvents";
 export const schedule = "*/10 * * * *";
@@ -21,9 +22,11 @@ export const author = "clarkjoao";
 async function validateToken(connection: Web3Connection, address, isTransactional, chainId): Promise<number> {
   let token = await db.tokens.findOne({
     where: {
-      address,
+      address: Sequelize.where(Sequelize.fn("LOWER", Sequelize.col("tokens.address")), 
+                              "=",
+                              address.toString().toLowerCase()),
       chain_id: chainId
-    }
+    } as WhereOptions
   });
 
   if (!token?.id) {
