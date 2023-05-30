@@ -77,18 +77,22 @@ export class BlockSniffer {
    */
   actOnMappedActions(decodedLogs: AddressEventDecodedLog) {
     const result: Promise<EventsProcessed>[] = [];
-
-    for (const [a, entry] of Object.entries(decodedLogs))
-      for (const [e, logs] of this.mappedEventActions[a] ? Object.entries(entry) : [])
-        for (const log of this.mappedEventActions[a].events[e] ? logs : [])
-          try {
-            const logWithContext = {...log, connection: this.#connection, chainId: this.#actingChainId};
-            loggerHandler.info(`BlockSniffer (chain:${this.#actingChainId}) acting on ${a} ${e}`);
-            loggerHandler.debug(`BlockSniffer (chain:${this.#actingChainId})`, log);
-            result.push(this.mappedEventActions[a].events[e](logWithContext, this.query));
-          } catch (e: any) {
-            loggerHandler.error(`BlockSniffer (chain:${this.#actingChainId}) failed to act ${e} with payload`, log, e?.toString());
-          }
+    loggerHandler.debug(`BlockSniffer (chain:${this.#actingChainId}) actOnMappedActions payload`, this.mappedEventActions, decodedLogs)
+    try {
+      for (const [a, entry] of Object.entries(decodedLogs))
+        for (const [e, logs] of this.mappedEventActions[a] ? Object.entries(entry) : [])
+          for (const log of this.mappedEventActions[a].events[e] ? logs : [])
+            try {
+              const logWithContext = {...log, connection: this.#connection, chainId: this.#actingChainId};
+              loggerHandler.info(`BlockSniffer (chain:${this.#actingChainId}) acting on ${a} ${e}`);
+              loggerHandler.debug(`BlockSniffer (chain:${this.#actingChainId})`, log);
+              result.push(this.mappedEventActions[a].events[e](logWithContext, this.query));
+            } catch (_e) {
+              loggerHandler.error(`BlockSniffer (chain:${this.#actingChainId}) failed ${a} ${e} with payload`, log)
+            }
+    } catch (e: any) {
+      loggerHandler.error(`BlockSniffer (chain:${this.#actingChainId}) failed to act on decoded logs`, e?.toString());
+    }
 
     Promise.all(result)
       .then((p) => {
