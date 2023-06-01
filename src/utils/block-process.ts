@@ -48,7 +48,7 @@ export async function getChainsRegistryAndNetworks() {
   return Promise.all(
     Object.entries(chains.reduce(chainsReducer, {}))
       .map(([rpc, info]) =>
-        db.networks.findAll({where: {chain_id: info.chainId, networkAddress: {[Op.not]: undefined}}, raw: true})
+        db.networks.findAll({where: {chain_id: info.chainId, networkAddress: {[Op.not]: ''}}, raw: true})
           .then(networks => networks.map(network => network.networkAddress!))
           .then(networks => [rpc, {
             ...info,
