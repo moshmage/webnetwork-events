@@ -21,13 +21,11 @@ function startChainListeners() {
   const _networkABIVents = {abi: findOnABI(NetworkV2.abi, Object.keys(NETWORK_EVENTS)), events: NETWORK_EVENTS}
 
   const networksReducer = (networks: string[]) =>
-    networks.reduce((p, c) => ({...p, [c]: _registryABIVents}), {})
+    networks.reduce((p, c) => ({...p, [c]: _networkABIVents}), {})
 
-  const entriesChainRegistryNetworksReducer = (p, [rpc, {
-    registryAddress,
-    networks
-  }]): { [rpc: string]: MappedEventActions } =>
-    ({...p, [rpc]: {[registryAddress]: _networkABIVents, ...networksReducer(networks)}})
+  const entriesChainRegistryNetworksReducer =
+    (p, [rpc, {registryAddress, networks}]): { [rpc: string]: MappedEventActions } =>
+      ({...p, [rpc]: {[registryAddress]: _registryABIVents, ...networksReducer(networks)}})
 
   getChainsRegistryAndNetworks()
     .then((array) => array.reduce(entriesChainRegistryNetworksReducer, {}))
