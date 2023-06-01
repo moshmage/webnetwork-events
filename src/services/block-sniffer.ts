@@ -79,16 +79,16 @@ export class BlockSniffer {
     const result: Promise<EventsProcessed>[] = [];
     loggerHandler.debug(`BlockSniffer (chain:${this.#actingChainId}) actOnMappedActions payload`, this.mappedEventActions, decodedLogs)
     try {
-      for (const [a, entry] of Object.entries(decodedLogs))
-        for (const [e, logs] of this.mappedEventActions[a] ? Object.entries(entry) : [])
-          for (const log of this.mappedEventActions[a].events[e] ? logs : [])
+      for (const [address, decodedLogEntry] of Object.entries(decodedLogs))
+        for (const [eventName, logs] of this.mappedEventActions[address] ? Object.entries(decodedLogEntry) : [])
+          for (const log of this.mappedEventActions[address].events[eventName] ? logs : [])
             try {
               const logWithContext = {...log, connection: this.#connection, chainId: this.#actingChainId};
-              loggerHandler.info(`BlockSniffer (chain:${this.#actingChainId}) acting on ${a} ${e}`);
+              loggerHandler.info(`BlockSniffer (chain:${this.#actingChainId}) acting on ${address} ${eventName}`);
               loggerHandler.debug(`BlockSniffer (chain:${this.#actingChainId})`, log);
-              result.push(this.mappedEventActions[a].events[e](logWithContext, this.query));
+              result.push(this.mappedEventActions[address].events[eventName](logWithContext, this.query));
             } catch (_e) {
-              loggerHandler.error(`BlockSniffer (chain:${this.#actingChainId}) failed ${a} ${e} with payload`, log)
+              loggerHandler.error(`BlockSniffer (chain:${this.#actingChainId}) failed ${address} ${eventName} with payload`, log)
             }
     } catch (e: any) {
       loggerHandler.error(`BlockSniffer (chain:${this.#actingChainId}) failed to act on decoded logs`, e?.toString());
@@ -163,7 +163,7 @@ export class BlockSniffer {
 
     const topics = [...new Set( // use new Set() to remove dupes and then destroy it because we don't need a set
       Object.entries(this.mappedEventActions)
-        .map(([a, {abi, events}], i) =>
+        .map(([a, {abi, events}]) =>
           Object.keys(events)
             .map((event) => abi.find(({name}) => event === name))
             .filter(value => value)
