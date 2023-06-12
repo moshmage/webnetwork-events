@@ -113,6 +113,7 @@ export class BlockSniffer {
           .then((logs) => this.actOnMappedActions(logs))
           .catch(e => {
             loggerHandler.error(`BlockSniffer`, e);
+            this.#fetchingLogs = false;
           });
 
     this.clearInterval();
@@ -167,7 +168,10 @@ export class BlockSniffer {
           Object.keys(events)
             .map((event) => abi.find(({name}) => event === name))
             .filter(value => value)
-            .map(item => ([_eth.abi.encodeEventSignature(item!), item!]))
+            .map(item => {
+              console.log(`item`, item);
+              return ([_eth.abi.encodeEventSignature(item!), item!])
+            })
             .map(([topic, item]) => {
               mappedAbiEventsAddress[a] = {
                 ...(mappedAbiEventsAddress[a] || {}),
