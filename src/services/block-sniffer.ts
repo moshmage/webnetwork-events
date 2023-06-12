@@ -168,10 +168,7 @@ export class BlockSniffer {
           Object.keys(events)
             .map((event) => abi.find(({name}) => event === name))
             .filter(value => value)
-            .map(item => {
-              console.log(`item`, item);
-              return ([_eth.abi.encodeEventSignature(item!), item!])
-            })
+            .map(item => ([_eth.abi.encodeEventSignature(item!), item!]))
             .map(([topic, item]) => {
               mappedAbiEventsAddress[a] = {
                 ...(mappedAbiEventsAddress[a] || {}),
@@ -183,6 +180,8 @@ export class BlockSniffer {
     )];
 
     loggerHandler.info(`BlockSniffer (chain:${this.#actingChainId}) Reading from ${this.#currentBlock} to ${targetBlock}; Will total ${requests < 1 ? 1 : Math.round(requests)} requests`);
+    loggerHandler.debug(`BlockSniffer (chain:${this.#actingChainId}) topics:`, topics);
+    loggerHandler.debug(`BlockSniffer (chain:${this.#actingChainId}) addresses:`, address);
 
     let toBlock = 0;
     for (let fromBlock = this.#currentBlock; fromBlock < targetBlock; fromBlock += this.pagesPerRequest) {

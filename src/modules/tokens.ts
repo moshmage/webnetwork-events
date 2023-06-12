@@ -1,7 +1,8 @@
-import { Op } from "sequelize";
+import {Op} from "sequelize";
 
 import db from "src/db";
-import { tokens } from "src/db/models/tokens";
+import {tokens} from "src/db/models/tokens";
+import loggerHandler from "../utils/logger-handler";
 
 const { EVENTS_CHAIN_ID: chainId } = process.env;
 
@@ -31,7 +32,7 @@ export async function findOrCreateToken(address: string,
 
     return token;
   } catch (error: any) {
-    console.log(`Failed to findOrCreate token ${address}`, error.toString());
+    loggerHandler.error(`Failed to findOrCreate token ${address}`, error.toString());
 
     return undefined;
   }
