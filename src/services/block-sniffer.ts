@@ -113,6 +113,7 @@ export class BlockSniffer {
           .then((logs) => this.actOnMappedActions(logs))
           .catch(e => {
             loggerHandler.error(`BlockSniffer`, e);
+            this.#fetchingLogs = false;
           });
 
     this.clearInterval();
@@ -179,6 +180,8 @@ export class BlockSniffer {
     )];
 
     loggerHandler.info(`BlockSniffer (chain:${this.#actingChainId}) Reading from ${this.#currentBlock} to ${targetBlock}; Will total ${requests < 1 ? 1 : Math.round(requests)} requests`);
+    loggerHandler.debug(`BlockSniffer (chain:${this.#actingChainId}) topics:`, topics);
+    loggerHandler.debug(`BlockSniffer (chain:${this.#actingChainId}) addresses:`, address);
 
     let toBlock = 0;
     for (let fromBlock = this.#currentBlock; fromBlock < targetBlock; fromBlock += this.pagesPerRequest) {
