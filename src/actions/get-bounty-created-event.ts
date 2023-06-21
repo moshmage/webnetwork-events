@@ -103,7 +103,7 @@ export async function action(block: DecodedLog<BountyCreatedEvent['returnValues'
             dbBounty.seoImage = hash
           } else logger.warn(`${name} Failed to get hash from IPFS for ${dbBounty.issueId}`);
         } catch (error) {
-          logger.error(`${name} Failed to get hash from IPFS for ${dbBounty.issueId}`, error?.toString());
+          logger.error(`${name} Failed to generate seo image for ${dbBounty.issueId}`, error?.toString());
         }
       }
 
