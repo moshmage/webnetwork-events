@@ -94,16 +94,20 @@ export async function action(block: DecodedLog<BountyCreatedEvent['returnValues'
   await validateToken(connection, bounty.transactional, true, chainId)
     .then(async ({id, symbol}) => {
       if (isIpfsEnvs) {
-        logger.debug(`${name} Creating card to bounty ${dbBounty.issueId}`);
-        const card = await generateCard(dbBounty, symbol);
-        const {hash} = await ipfsService.add(card);
-          
-        if(hash){
-          dbBounty.seoImage = hash
-        } else logger.warn(`${name} Failed to get hash from IPFS for ${dbBounty.issueId}`);
+        try {
+          logger.debug(`${name} Creating card to bounty ${dbBounty.issueId}`);
+          const card = await generateCard(dbBounty, symbol);
+          const {hash} = await ipfsService.add(card);
+            
+          if(hash){
+            dbBounty.seoImage = hash
+          } else logger.warn(`${name} Failed to get hash from IPFS for ${dbBounty.issueId}`);
+        } catch (error) {
+          logger.error(`${name} Failed to generate seo image for ${dbBounty.issueId}`, error?.toString());
+        }
       }
 
-      return id
+      return id;
     })
     .then(id => dbBounty.transactionalTokenId = id)
     .catch(error => logger.warn(`Failed to validate token ${bounty.transactional}`, error.toString()));
