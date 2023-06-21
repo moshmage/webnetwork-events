@@ -77,18 +77,22 @@ export class BlockSniffer {
    */
   actOnMappedActions(decodedLogs: AddressEventDecodedLog) {
     const result: Promise<EventsProcessed>[] = [];
-
-    for (const [a, entry] of Object.entries(decodedLogs))
-      for (const [e, logs] of this.mappedEventActions[a] ? Object.entries(entry) : [])
-        for (const log of this.mappedEventActions[a].events[e] ? logs : [])
-          try {
-            const logWithContext = {...log, connection: this.#connection, chainId: this.#actingChainId};
-            loggerHandler.info(`BlockSniffer (chain:${this.#actingChainId}) acting on ${a} ${e}`);
-            loggerHandler.debug(`BlockSniffer (chain:${this.#actingChainId})`, log);
-            result.push(this.mappedEventActions[a].events[e](logWithContext, this.query));
-          } catch (e: any) {
-            loggerHandler.error(`BlockSniffer (chain:${this.#actingChainId}) failed to act ${e} with payload`, log, e?.toString());
-          }
+    loggerHandler.debug(`BlockSniffer (chain:${this.#actingChainId}) actOnMappedActions payload`, this.mappedEventActions, decodedLogs)
+    try {
+      for (const [address, decodedLogEntry] of Object.entries(decodedLogs))
+        for (const [eventName, logs] of this.mappedEventActions[address] ? Object.entries(decodedLogEntry) : [])
+          for (const log of this.mappedEventActions[address].events[eventName] ? logs : [])
+            try {
+              const logWithContext = {...log, connection: this.#connection, chainId: this.#actingChainId};
+              loggerHandler.info(`BlockSniffer (chain:${this.#actingChainId}) acting on ${address} ${eventName}`);
+              loggerHandler.debug(`BlockSniffer (chain:${this.#actingChainId})`, log);
+              result.push(this.mappedEventActions[address].events[eventName](logWithContext, this.query));
+            } catch (_e) {
+              loggerHandler.error(`BlockSniffer (chain:${this.#actingChainId}) failed ${address} ${eventName} with payload`, log)
+            }
+    } catch (e: any) {
+      loggerHandler.error(`BlockSniffer (chain:${this.#actingChainId}) failed to act on decoded logs`, e?.toString());
+    }
 
     Promise.all(result)
       .then((p) => {
@@ -109,6 +113,7 @@ export class BlockSniffer {
           .then((logs) => this.actOnMappedActions(logs))
           .catch(e => {
             loggerHandler.error(`BlockSniffer`, e);
+            this.#fetchingLogs = false;
           });
 
     this.clearInterval();
@@ -159,7 +164,7 @@ export class BlockSniffer {
 
     const topics = [...new Set( // use new Set() to remove dupes and then destroy it because we don't need a set
       Object.entries(this.mappedEventActions)
-        .map(([a, {abi, events}], i) =>
+        .map(([a, {abi, events}]) =>
           Object.keys(events)
             .map((event) => abi.find(({name}) => event === name))
             .filter(value => value)
@@ -175,6 +180,8 @@ export class BlockSniffer {
     )];
 
     loggerHandler.info(`BlockSniffer (chain:${this.#actingChainId}) Reading from ${this.#currentBlock} to ${targetBlock}; Will total ${requests < 1 ? 1 : Math.round(requests)} requests`);
+    loggerHandler.debug(`BlockSniffer (chain:${this.#actingChainId}) topics:`, topics);
+    loggerHandler.debug(`BlockSniffer (chain:${this.#actingChainId}) addresses:`, address);
 
     let toBlock = 0;
     for (let fromBlock = this.#currentBlock; fromBlock < targetBlock; fromBlock += this.pagesPerRequest) {

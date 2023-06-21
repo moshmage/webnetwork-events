@@ -2,7 +2,7 @@ import db from "src/db";
 import logger from "src/utils/logger-handler";
 import {ERC20, Web3Connection,} from "@taikai/dappkit";
 import {EventsProcessed, EventsQuery,} from "src/interfaces/block-chain-service";
-import {DB_BOUNTY_NOT_FOUND} from "../utils/messages.const";
+import {DB_BOUNTY_NOT_FOUND, NETWORK_NOT_FOUND} from "../utils/messages.const";
 import {updateLeaderboardBounties} from "src/modules/leaderboard";
 import {updateBountiesHeader} from "src/modules/handle-header-information";
 import {sendMessageToTelegramChannels} from "../integrations/telegram";
@@ -12,11 +12,13 @@ import {isAddress} from "web3-utils";
 import {DecodedLog} from "../interfaces/block-sniffer";
 import {getBountyFromChain, getNetwork, parseLogWithContext} from "../utils/block-process";
 import {BountyCreatedEvent} from "@taikai/dappkit/dist/src/interfaces/events/network-v2-events";
+
 import { Sequelize, WhereOptions } from "sequelize";
 import generateCard from "src/modules/generate-bounty-cards";
 import ipfsService from "src/services/ipfs-service";
 import { tokens } from "src/db/models/tokens";
 import { isIpfsEnvs } from "src/utils/ipfs-envs-verify";
+
 
 export const name = "getBountyCreatedEvents";
 export const schedule = "*/10 * * * *";
@@ -59,8 +61,10 @@ export async function action(block: DecodedLog<BountyCreatedEvent['returnValues'
     return eventsProcessed;
 
   const network = await getNetwork(chainId, address);
-  if (!network)
+  if (!network) {
+    logger.warn(NETWORK_NOT_FOUND(name, address))
     return eventsProcessed;
+  }
 
   const dbBounty = await db.issues.findOne({
     where: { issueId, network_id: network.id },

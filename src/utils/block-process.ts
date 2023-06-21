@@ -6,6 +6,7 @@ import db from "../db";
 import {nativeZeroAddress} from "@taikai/dappkit/dist/src/utils/constants";
 import {chainsAttributes} from "../db/models/chains";
 import {Op} from "sequelize";
+
 import { DecodedLog } from "src/interfaces/block-sniffer";
 import { Sequelize, WhereOptions } from "sequelize";
 
@@ -30,6 +31,7 @@ export async function getNetwork(chain_id, address) {
       chain_id
     } as WhereOptions
   });
+
 
   if (!network)
     logger.error(NETWORK_NOT_FOUND(name, address));
@@ -56,7 +58,7 @@ export async function getChainsRegistryAndNetworks() {
   return Promise.all(
     Object.entries(chains.reduce(chainsReducer, {}))
       .map(([rpc, info]) =>
-        db.networks.findAll({where: {chain_id: info.chainId, networkAddress: {[Op.not]: undefined}}, raw: true})
+        db.networks.findAll({where: {chain_id: info.chainId, networkAddress: {[Op.not]: ''}}, raw: true})
           .then(networks => networks.map(network => network.networkAddress!))
           .then(networks => [rpc, {
             ...info,

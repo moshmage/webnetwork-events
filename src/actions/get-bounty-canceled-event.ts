@@ -3,7 +3,7 @@ import GHService from "src/services/github";
 import logger from "src/utils/logger-handler";
 import {EventsProcessed, EventsQuery,} from "src/interfaces/block-chain-service";
 import {slashSplit} from "src/utils/string";
-import {DB_BOUNTY_NOT_FOUND} from "../utils/messages.const";
+import {DB_BOUNTY_NOT_FOUND, NETWORK_NOT_FOUND} from "../utils/messages.const";
 import {handleBenefactors} from "src/modules/handle-benefactors";
 import BigNumber from "bignumber.js";
 import {updateLeaderboardBounties} from "src/modules/leaderboard";
@@ -11,7 +11,7 @@ import {DecodedLog} from "../interfaces/block-sniffer";
 import {getBountyFromChain, getNetwork, parseLogWithContext} from "../utils/block-process";
 import {sendMessageToTelegramChannels} from "../integrations/telegram";
 import {BOUNTY_STATE_CHANGED} from "../integrations/telegram/messages";
-import { pull_requests } from "src/db/models/pull_requests";
+import {pull_requests} from "src/db/models/pull_requests";
 
 export const name = "getBountyCanceledEvents";
 export const schedule = "*/11 * * * *";
@@ -35,14 +35,16 @@ export async function action(block: DecodedLog, query?: EventsQuery): Promise<Ev
     return eventsProcessed;
 
   const network = await getNetwork(chainId, address);
-  if (!network)
+  if (!network) {
+    logger.warn(NETWORK_NOT_FOUND(name, address))
     return eventsProcessed;
+  }
 
   const dbBounty = await db.issues.findOne({
     where: {contractId: block.returnValues.id, issueId: bounty.cid, network_id: network.id,},
     include: [
-      {association: "repository"}, 
-      {association: "benefactors"}, 
+      {association: "repository"},
+      {association: "benefactors"},
       {association: "network"},
       {association: "pull_requests", required: false},
     ],

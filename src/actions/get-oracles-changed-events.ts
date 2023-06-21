@@ -9,6 +9,7 @@ import {updatePriceHeader} from "src/modules/handle-header-information";
 import {handleIsDisputed} from "src/modules/handle-isDisputed";
 import {DecodedLog} from "../interfaces/block-sniffer";
 import {getNetwork} from "../utils/block-process";
+import {NETWORK_NOT_FOUND} from "../utils/messages.const";
 
 export const name = "getOraclesChangedEvents";
 export const schedule = "*/30 * * * *";
@@ -23,8 +24,10 @@ export async function action(block: DecodedLog<OraclesChangedEvent['returnValues
   let decimals;
 
   const network = await getNetwork(chainId, address);
-  if (!network)
+  if (!network) {
+    logger.warn(NETWORK_NOT_FOUND(name, address))
     return eventsProcessed;
+  }
 
 
   const dbNetwork = await db.networks.findOne({
