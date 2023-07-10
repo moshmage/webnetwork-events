@@ -12,7 +12,4 @@ export class ApiBlockSniffer extends BlockSniffer {
   // remove these because they are not needed on this ephemeral state
   protected async saveCurrentBlock(currentBlock = 0) {
   }
-
-  protected async prepareCurrentBlock() {
-  }
 }

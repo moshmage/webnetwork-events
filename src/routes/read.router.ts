@@ -16,13 +16,17 @@ router.get(`/:chainId/:address/:event`, async (req, res) => {
   const {chainId, address, event} = req.params;
   const {from, to} = req.eventQuery?.blockQuery || {};
 
+  if (!from && !to) {
+    return res.status(400).json({message: `missing from-to params`});
+  }
+
   const chainIdExists = await db.chains.findOne({where: {chainId: {[Op.eq]: +chainId}}, raw: true});
   if (!chainIdExists)
     return res.status(400).json({message: `unknown chain ${chainId}`});
 
   const _registryKeys = Object.keys(REGISTRY_EVENTS);
   const _networkKeys = Object.keys(NETWORK_EVENTS);
-  const _standaloneKeys = Object.keys({ ... MIDNIGHT_ACTIONS, ...MINUTE_ACTIONS});
+  const _standaloneKeys = Object.keys({...MIDNIGHT_ACTIONS, ...MINUTE_ACTIONS});
   const _keys = [..._networkKeys, ..._registryKeys, ..._standaloneKeys];
 
   if (!_keys.includes(event))
