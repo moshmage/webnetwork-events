@@ -8,6 +8,8 @@ import {validateProposal} from "./proposal-validate-state";
 import logger from "src/utils/logger-handler";
 import {DecodedLog} from "../interfaces/block-sniffer";
 import {getNetwork} from "../utils/block-process";
+import {Push} from "../services/analytics/push";
+import {AnalyticEventName} from "../services/analytics/types/events";
 
 export async function disputeProcessor(block: DecodedLog<BountyProposalDisputedEvent['returnValues']>, isProposalRequired = true) {
   const {returnValues: {bountyId, prId, proposalId}, connection, address, chainId} = block;
@@ -59,6 +61,15 @@ export async function disputeProcessor(block: DecodedLog<BountyProposalDisputedE
           });
           if (curator)
             await updateCuratorProposalParams(curator, "disputedProposals", "add");
+
+          Push.event(AnalyticEventName.MERGE_PROPOSAL_DISPUTED, {
+            chainId, network: {name: network.name, id: network.id},
+            bountyId: dbBounty.id, bountyContractId: dbBounty.contractId,
+            deliverableId: dbProposal.deliverableId, deliverableContractId: bounty.proposals[proposalId].prId,
+            proposalId: dbProposal.id, proposalContractId: dbProposal.contractId,
+            actor: actorAddress,
+          })
+
         }
       }
     }

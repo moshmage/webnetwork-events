@@ -1,13 +1,13 @@
 import * as Sequelize from 'sequelize';
-import { DataTypes, Model, Optional } from 'sequelize';
-import type { chains, chainsId } from './chains';
-import type { curators, curatorsId } from './curators';
-import type { delegations, delegationsId } from './delegations';
-import type { issues, issuesId } from './issues';
-import type { merge_proposals, merge_proposalsId } from './merge_proposals';
-import type { network_tokens, network_tokensId } from './network_tokens';
-import type { repositories, repositoriesId } from './repositories';
-import type { tokens, tokensId } from './tokens';
+import {DataTypes, Model, Optional} from 'sequelize';
+import type {chains, chainsId} from './chains';
+import type {curators, curatorsId} from './curators';
+import type {delegations, delegationsId} from './delegations';
+import type {issues, issuesId} from './issues';
+import type {merge_proposals, merge_proposalsId} from './merge_proposals';
+import type {network_tokens, network_tokensId} from './network_tokens';
+import type {repositories, repositoriesId} from './repositories';
+import type {tokens, tokensId} from './tokens';
 
 export interface networksAttributes {
   id: number;
@@ -41,7 +41,32 @@ export interface networksAttributes {
 
 export type networksPk = "id";
 export type networksId = networks[networksPk];
-export type networksOptionalAttributes = "id" | "name" | "colors" | "networkAddress" | "logoIcon" | "fullLogo" | "createdAt" | "updatedAt" | "isClosed" | "allowCustomTokens" | "councilMembers" | "isRegistered" | "isDefault" | "chain_id" | "network_token_id" | "councilAmount" | "disputableTime" | "draftTime" | "oracleExchangeRate" | "mergeCreatorFeeShare" | "percentageNeededForDispute" | "cancelableTime" | "proposerFeeShare" | "allowMerge" | "banned_domains";
+export type networksOptionalAttributes =
+  "id"
+  | "name"
+  | "colors"
+  | "networkAddress"
+  | "logoIcon"
+  | "fullLogo"
+  | "createdAt"
+  | "updatedAt"
+  | "isClosed"
+  | "allowCustomTokens"
+  | "councilMembers"
+  | "isRegistered"
+  | "isDefault"
+  | "chain_id"
+  | "network_token_id"
+  | "councilAmount"
+  | "disputableTime"
+  | "draftTime"
+  | "oracleExchangeRate"
+  | "mergeCreatorFeeShare"
+  | "percentageNeededForDispute"
+  | "cancelableTime"
+  | "proposerFeeShare"
+  | "allowMerge"
+  | "banned_domains";
 export type networksCreationAttributes = Optional<networksAttributes, networksOptionalAttributes>;
 
 export class networks extends Model<networksAttributes, networksCreationAttributes> implements networksAttributes {

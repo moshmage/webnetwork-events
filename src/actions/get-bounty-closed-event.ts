@@ -1,7 +1,6 @@
 import db from "src/db";
 import logger from "src/utils/logger-handler";
 import {EventsProcessed, EventsQuery,} from "src/interfaces/block-chain-service";
-import {EventService} from "../services/event-service";
 import {DB_BOUNTY_NOT_FOUND, NETWORK_NOT_FOUND} from "../utils/messages.const";
 import {updateCuratorProposalParams} from "src/modules/handle-curators";
 import {updateLeaderboardBounties, updateLeaderboardNfts, updateLeaderboardProposals} from "src/modules/leaderboard";
@@ -9,7 +8,9 @@ import {DecodedLog} from "../interfaces/block-sniffer";
 import {getBountyFromChain, getNetwork, parseLogWithContext} from "../utils/block-process";
 import {sendMessageToTelegramChannels} from "../integrations/telegram";
 import {BOUNTY_CLOSED} from "../integrations/telegram/messages";
-import { updateBountiesHeader } from "src/modules/handle-header-information";
+import {updateBountiesHeader} from "src/modules/handle-header-information";
+import {Push} from "../services/analytics/push";
+import {AnalyticEventName} from "../services/analytics/types/events";
 
 export const name = "getBountyClosedEvents";
 export const schedule = "*/12 * * * *";
@@ -102,8 +103,19 @@ export async function action(block: DecodedLog, query?: EventsQuery): Promise<Ev
 
   eventsProcessed[network.name!] = {
     [dbBounty.id!.toString()]: {bounty: dbBounty, eventBlock: parseLogWithContext(block)}
-
   };
+
+  const {tokenAmount, fundingAmount, rewardAmount, rewardToken, transactional} = bounty;
+
+  Push.event(AnalyticEventName.BOUNTY_CLOSED, {
+    chainId, network: {name: network.name, id: network.id},
+    tokenAmount, fundingAmount, rewardAmount, rewardToken, transactional,
+    currency: dbBounty.transactionalToken?.symbol,
+    reward: dbBounty.rewardToken?.symbol,
+    creator: block.returnValues.creator,
+    username: dbBounty.user?.githubLogin,
+    actor: address
+  })
 
   return eventsProcessed;
 }
