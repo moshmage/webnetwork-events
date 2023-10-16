@@ -7,6 +7,8 @@ import {DecodedLog} from "../interfaces/block-sniffer";
 import {getBountyFromChain, getNetwork, parseLogWithContext} from "../utils/block-process";
 import {sendMessageToTelegramChannels} from "../integrations/telegram";
 import {BOUNTY_STATE_CHANGED} from "../integrations/telegram/messages";
+import {Push} from "../services/analytics/push";
+import {AnalyticEventName} from "../services/analytics/types/events";
 
 export const name = "getBountyPullRequestReadyForReviewEvents";
 export const schedule = "*/12 * * * *";
@@ -30,7 +32,7 @@ export async function action(block: DecodedLog<BountyPullRequestReadyForReviewEv
   }
 
   const dbBounty = await db.issues.findOne({
-    where: {issueId: bounty.cid, contractId: bountyId, network_id: network.id},
+    where: {contractId: bountyId, network_id: network.id},
     include: [{association: "network"}]
   })
   if (!dbBounty) {
@@ -41,22 +43,20 @@ export async function action(block: DecodedLog<BountyPullRequestReadyForReviewEv
 
   const pullRequest = bounty.pullRequests[pullRequestId];
 
-  const dbPullRequest = await db.pull_requests.findOne({
-    where: {issueId: dbBounty.id, githubId: pullRequest.cid.toString(), status: "draft", network_id: network?.id}
+  const dbDeliverable = await db.deliverables.findOne({
+    where: {id: pullRequest.cid}
   })
 
-  if (!dbPullRequest) {
-    logger.warn(`${name} No pull request found with "draft" and id ${pullRequest.cid}, maybe it was already parsed?`);
+  if (!dbDeliverable) {
+    logger.warn(`${name} No deliverable found with "draft" and id ${pullRequest.cid}, maybe it was already parsed?`);
     return eventsProcessed;
   }
 
+  dbDeliverable.canceled = pullRequest.canceled
+  dbDeliverable.markedReadyForReview = pullRequest?.ready
 
-  if (!["closed", "merged"].includes(dbPullRequest.status!.toString())) {
-    dbPullRequest.status =
-      pullRequest.canceled ? "canceled" : pullRequest?.ready ? "ready" : "draft";
+  await dbDeliverable.save();
 
-    await dbPullRequest.save();
-  }
 
   if (!["canceled", "closed", "proposal"].includes(dbBounty.state!)) {
     dbBounty.state = "ready";
@@ -65,8 +65,15 @@ export async function action(block: DecodedLog<BountyPullRequestReadyForReviewEv
   }
 
   eventsProcessed[network.name!] = {
-    [dbBounty.issueId!.toString()]: {bounty: dbBounty, eventBlock: parseLogWithContext(block)}
+    [dbBounty.id!.toString()]: {bounty: dbBounty, eventBlock: parseLogWithContext(block)}
   };
+
+  Push.event(AnalyticEventName.PULL_REQUEST_READY, {
+    chainId, network: {name: network.name, id: network.id},
+    bountyId: dbBounty.id, bountyContractId: dbBounty.contractId,
+    deliverableId: dbDeliverable.id, deliverableContractId: pullRequestId,
+    actor: pullRequest.creator,
+  })
 
 
   return eventsProcessed;

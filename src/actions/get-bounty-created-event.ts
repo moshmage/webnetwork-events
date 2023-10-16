@@ -13,11 +13,13 @@ import {DecodedLog} from "../interfaces/block-sniffer";
 import {getBountyFromChain, getNetwork, parseLogWithContext} from "../utils/block-process";
 import {BountyCreatedEvent} from "@taikai/dappkit/dist/src/interfaces/events/network-v2-events";
 
-import { Sequelize, WhereOptions } from "sequelize";
+import {Sequelize, WhereOptions} from "sequelize";
 import generateCard from "src/modules/generate-bounty-cards";
 import ipfsService from "src/services/ipfs-service";
-import { tokens } from "src/db/models/tokens";
-import { isIpfsEnvs } from "src/utils/ipfs-envs-verify";
+import {tokens} from "src/db/models/tokens";
+import {isIpfsEnvs} from "src/utils/ipfs-envs-verify";
+import {Push} from "../services/analytics/push";
+import {AnalyticEventName} from "../services/analytics/types/events";
 
 
 export const name = "getBountyCreatedEvents";
@@ -54,7 +56,7 @@ async function validateToken(connection: Web3Connection, address, isTransactiona
 
 export async function action(block: DecodedLog<BountyCreatedEvent['returnValues']>, query?: EventsQuery): Promise<EventsProcessed> {
   const eventsProcessed: EventsProcessed = {};
-  const {returnValues: {id, cid: issueId}, connection, address, chainId} = block;
+  const {returnValues: { id, cid }, connection, address, chainId} = block;
 
   const bounty = await getBountyFromChain(connection, address, id, name);
   if (!bounty)
@@ -67,26 +69,29 @@ export async function action(block: DecodedLog<BountyCreatedEvent['returnValues'
   }
 
   const dbBounty = await db.issues.findOne({
-    where: { issueId, network_id: network.id },
-    include: [{ association: "network" }, { association: "repository" }],
+    where: {
+      ipfsUrl: cid,
+      network_id: network.id
+    },
+    include: [
+      { association: "network" }
+    ],
   });
+
   if (!dbBounty) {
-    logger.warn(DB_BOUNTY_NOT_FOUND(name, issueId, network.id));
+    logger.warn(DB_BOUNTY_NOT_FOUND(name, cid, network.id));
     return eventsProcessed;
   }
 
   if (dbBounty.state !== "pending") {
-    logger.warn(`${name} Bounty ${issueId} was already parsed.`);
+    logger.warn(`${name} Bounty ${cid} was already parsed.`);
     return eventsProcessed;
   }
 
   dbBounty.state = "draft";
-  dbBounty.creatorAddress = bounty.creator;
-  dbBounty.creatorGithub = bounty.githubUser;
   dbBounty.amount = bounty.tokenAmount.toString();
   dbBounty.fundingAmount = bounty.fundingAmount.toString();
   dbBounty.rewardAmount = bounty.rewardAmount.toString();
-  dbBounty.branch = bounty.branch;
   dbBounty.title = bounty.title;
   dbBounty.contractId = +id;
   dbBounty.contractCreationDate = bounty.creationDate.toString();
@@ -95,15 +100,15 @@ export async function action(block: DecodedLog<BountyCreatedEvent['returnValues'
     .then(async ({id, symbol}) => {
       if (isIpfsEnvs) {
         try {
-          logger.debug(`${name} Creating card to bounty ${dbBounty.issueId}`);
+          logger.debug(`${name} Creating card to bounty ${dbBounty.id}`);
           const card = await generateCard(dbBounty, symbol);
           const {hash} = await ipfsService.add(card);
             
           if(hash){
             dbBounty.seoImage = hash
-          } else logger.warn(`${name} Failed to get hash from IPFS for ${dbBounty.issueId}`);
+          } else logger.warn(`${name} Failed to get hash from IPFS for ${dbBounty.id}`);
         } catch (error) {
-          logger.error(`${name} Failed to generate seo image for ${dbBounty.issueId}`, error?.toString());
+          logger.error(`${name} Failed to generate seo image for ${dbBounty.id}`, error?.toString());
         }
       }
 
@@ -121,13 +126,26 @@ export async function action(block: DecodedLog<BountyCreatedEvent['returnValues'
 
   await updateLeaderboardBounties();
   await updateBountiesHeader();
-  
+
   sendMessageToTelegramChannels(NEW_BOUNTY_OPEN(dbBounty!));
 
   eventsProcessed[network.name!] = {
     ...eventsProcessed[network.name!],
-    [dbBounty.issueId!.toString()]: {bounty: dbBounty, eventBlock: parseLogWithContext(block)}
+    [dbBounty.id.toString()]: {bounty: dbBounty, eventBlock: parseLogWithContext(block)}
   };
+
+  const {tokenAmount, fundingAmount, rewardAmount, rewardToken, transactional} = bounty;
+
+  Push.event(+bounty.fundingAmount > 0 ? AnalyticEventName.FUNDING_REQUEST_CREATED : AnalyticEventName.BOUNTY_CREATED, {
+    chainId, network: {name: network.name, id: network.id},
+    tokenAmount, fundingAmount, rewardAmount, rewardToken, transactional,
+    currency: dbBounty.transactionalToken?.symbol,
+    reward: dbBounty.rewardToken?.symbol,
+    creator: block.returnValues.creator,
+    username: dbBounty.user?.githubLogin,
+    bountyId: dbBounty.id,
+    bountyChainId: bounty.id
+  })
 
   return eventsProcessed;
 }

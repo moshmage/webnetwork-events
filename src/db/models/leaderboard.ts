@@ -1,5 +1,5 @@
 import * as Sequelize from 'sequelize';
-import { DataTypes, Model, Optional } from 'sequelize';
+import {DataTypes, Model, Optional} from 'sequelize';
 
 export interface leaderboardAttributes {
   id: number;
@@ -49,7 +49,8 @@ export class leaderboard extends Model<leaderboardAttributes, leaderboardCreatio
     },
     numberNfts: {
       type: DataTypes.INTEGER,
-      allowNull: true
+      allowNull: true,
+      defaultValue: 0
     },
     ownedBountiesOpened: {
       type: DataTypes.INTEGER,

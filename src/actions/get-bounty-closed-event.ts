@@ -1,10 +1,6 @@
-import {Op} from "sequelize";
 import db from "src/db";
-import GHService from "src/services/github";
 import logger from "src/utils/logger-handler";
 import {EventsProcessed, EventsQuery,} from "src/interfaces/block-chain-service";
-import {slashSplit} from "src/utils/string";
-import {EventService} from "../services/event-service";
 import {DB_BOUNTY_NOT_FOUND, NETWORK_NOT_FOUND} from "../utils/messages.const";
 import {updateCuratorProposalParams} from "src/modules/handle-curators";
 import {updateLeaderboardBounties, updateLeaderboardNfts, updateLeaderboardProposals} from "src/modules/leaderboard";
@@ -12,49 +8,14 @@ import {DecodedLog} from "../interfaces/block-sniffer";
 import {getBountyFromChain, getNetwork, parseLogWithContext} from "../utils/block-process";
 import {sendMessageToTelegramChannels} from "../integrations/telegram";
 import {BOUNTY_CLOSED} from "../integrations/telegram/messages";
+import {updateBountiesHeader} from "src/modules/handle-header-information";
+import {Push} from "../services/analytics/push";
+import {AnalyticEventName} from "../services/analytics/types/events";
 
 export const name = "getBountyClosedEvents";
 export const schedule = "*/12 * * * *";
 export const description = "Move to 'Closed' status the bounty";
 export const author = "clarkjoao";
-
-async function mergeProposal(bounty, id, issueId, network_id) {
-  const pullRequest =
-    await db.pull_requests.findOne({where: {id, issueId, network_id},});
-
-  if (!pullRequest) {
-    logger.debug(`mergeProposal() has no pullRequest on database`);
-    return;
-  }
-
-  const [owner, repo] = slashSplit(bounty?.repository?.githubPath);
-
-  await GHService.mergeProposal(repo, owner, pullRequest?.githubId as string);
-  await GHService.issueClose(repo, owner, bounty?.githubId);
-
-  pullRequest.status = "merged";
-  await pullRequest.save();
-
-  return pullRequest;
-}
-
-async function closePullRequests(bounty, mergedPullRequestId, network_id) {
-  const pullRequests = await db.pull_requests.findAll({
-    where: {
-      issueId: bounty.id,
-      githubId: {[Op.not]: mergedPullRequestId},
-      network_id
-    }
-  });
-
-  const [owner, repo] = slashSplit(bounty?.repository?.githubPath);
-
-  for (const pr of pullRequests) {
-    await GHService.pullrequestClose(owner, repo, pr.githubId as string);
-    pr.status = "closed";
-    await pr.save();
-  }
-}
 
 async function updateUserPayments(proposal, transactionHash, issueId, tokenAmount) {
   return Promise.all(
@@ -79,9 +40,6 @@ async function updateCuratorProposal(address: string, networkId: number) {
 }
 
 export async function action(block: DecodedLog, query?: EventsQuery): Promise<EventsProcessed> {
-
-  const service = new EventService(name, query);
-
   const eventsProcessed: EventsProcessed = {};
   const {returnValues: {id, proposalId}, connection, address, chainId} = block;
 
@@ -96,11 +54,9 @@ export async function action(block: DecodedLog, query?: EventsQuery): Promise<Ev
   }
 
   const dbBounty = await db.issues.findOne({
-    where: {contractId: id, issueId: bounty.cid, network_id: network?.id,},
+    where: {contractId: id, network_id: network?.id,},
     include: [
-      {association: "repository",},
-      {association: "merge_proposals",},
-      {association: "pull_requests",},
+      {association: "merge_proposals"},
       {association: "network"},
     ],
   });
@@ -123,35 +79,43 @@ export async function action(block: DecodedLog, query?: EventsQuery): Promise<Ev
     return eventsProcessed;
   }
 
-
-  try {
-    if (network.allowMerge) {
-      const mergedPR = await mergeProposal(dbBounty, dbProposal.pullRequestId, dbProposal.issueId, network?.id);
-      if (mergedPR)
-        await closePullRequests(dbBounty, mergedPR.githubId, network?.id);
-    }
-
-  } catch (error) {
-    logger.error(`${name} proposal ${proposalId} was not is not mergeable`, error?.toString());
+  const deliverable = await db.deliverables.findOne({ where: { id: dbProposal.deliverableId }});
+  if (!deliverable) {
+    logger.debug(`mergeProposal() has no deliverable on database`);
+    return eventsProcessed;
   }
 
+  deliverable.accepted = true;
+  await deliverable.save();
 
   dbBounty.merged = dbProposal?.contractId as any;
   dbBounty.state = "closed";
   await dbBounty.save();
-  
+
   sendMessageToTelegramChannels(BOUNTY_CLOSED(dbBounty, dbProposal, proposalId));
 
   await updateUserPayments(bounty.proposals[+proposalId], block.transactionHash, dbBounty.id, bounty.tokenAmount);
-
   await updateCuratorProposal(bounty.proposals[+proposalId].creator, network?.id)
   await updateLeaderboardNfts()
   await updateLeaderboardBounties("closed");
   await updateLeaderboardProposals("accepted");
+  await updateBountiesHeader();
 
   eventsProcessed[network.name!] = {
-    [dbBounty.issueId!.toString()]: {bounty: dbBounty, eventBlock: parseLogWithContext(block)}
+    [dbBounty.id!.toString()]: {bounty: dbBounty, eventBlock: parseLogWithContext(block)}
   };
+
+  const {tokenAmount, fundingAmount, rewardAmount, rewardToken, transactional} = bounty;
+
+  Push.event(AnalyticEventName.BOUNTY_CLOSED, {
+    chainId, network: {name: network.name, id: network.id},
+    tokenAmount, fundingAmount, rewardAmount, rewardToken, transactional,
+    currency: dbBounty.transactionalToken?.symbol,
+    reward: dbBounty.rewardToken?.symbol,
+    creator: block.returnValues.creator,
+    username: dbBounty.user?.githubLogin,
+    actor: address
+  })
 
   return eventsProcessed;
 }

@@ -10,6 +10,8 @@ import {getBountyFromChain, getNetwork, parseLogWithContext} from "../utils/bloc
 import {sendMessageToTelegramChannels} from "../integrations/telegram";
 import {BOUNTY_STATE_CHANGED} from "../integrations/telegram/messages";
 import {NETWORK_NOT_FOUND} from "../utils/messages.const";
+import {Push} from "../services/analytics/push";
+import {AnalyticEventName} from "../services/analytics/types/events";
 
 export const name = "getBountyProposalCreatedEvents";
 export const schedule = "*/13 * * * *";
@@ -19,7 +21,6 @@ export const author = "clarkjoao";
 export async function action(block: DecodedLog<BountyProposalCreatedEvent['returnValues']>, query?: EventsQuery): Promise<EventsProcessed> {
   const eventsProcessed: EventsProcessed = {};
   const {returnValues: {bountyId, prId, proposalId}, connection, address, chainId} = block;
-
 
   const bounty = await getBountyFromChain(connection, address, bountyId, name);
   if (!bounty)
@@ -32,12 +33,12 @@ export async function action(block: DecodedLog<BountyProposalCreatedEvent['retur
   }
 
   const values = await validateProposal(bounty, prId, proposalId, network.id, false);
-  if (!values?.proposal || !values?.dbBounty || !values?.dbPullRequest)
+  if (!values?.proposal || !values?.dbBounty || !values?.dbDeliverable)
     return eventsProcessed;
 
-  const {proposal, dbBounty, dbUser, dbPullRequest} = values;
+  const {proposal, dbBounty, dbUser, dbDeliverable} = values;
 
-  const dbIssue = await db.issues.findOne({where: {issueId: bounty.cid, network_id: network.id}});
+  const dbIssue = await db.issues.findOne({where: {contractId: bounty.id, network_id: network.id}});
   if (!dbIssue) {
     logger.warn(`${name} Issue ${bounty.cid} not found`);
     return eventsProcessed;
@@ -62,7 +63,7 @@ export async function action(block: DecodedLog<BountyProposalCreatedEvent['retur
     disputeWeight: new BigNumber(proposal.disputeWeight).toFixed(),
     contractCreationDate: proposal.creationDate.toString(),
     issueId: dbBounty.id,
-    pullRequestId: dbPullRequest.id,
+    deliverableId: dbDeliverable.id,
     githubLogin: dbUser?.githubLogin,
     creator: proposal.creator,
     isDisputed: false,
@@ -89,8 +90,16 @@ export async function action(block: DecodedLog<BountyProposalCreatedEvent['retur
   await updateLeaderboardProposals();
 
   eventsProcessed[network.name!] = {
-    [dbBounty.issueId!.toString()]: {bounty: dbBounty, eventBlock: parseLogWithContext(block)}
+    [dbBounty.id!.toString()]: {bounty: dbBounty, eventBlock: parseLogWithContext(block)}
   };
+
+  Push.event(AnalyticEventName.MERGE_PROPOSAL_OPEN, {
+    chainId, network: {name: network.name, id: network.id},
+    bountyId: dbBounty.id, bountyContractId: dbBounty.contractId,
+    deliverableId: dbDeliverable.id, deliverableContractId: dbDeliverable.prContractId,
+    proposalId: createProposal.id, proposalContractId: createProposal.contractId,
+    actor: proposal.creator,
+  })
 
 
   return eventsProcessed;

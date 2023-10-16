@@ -1,8 +1,6 @@
 import db from "src/db";
-import GHService from "src/services/github";
 import logger from "src/utils/logger-handler";
 import {EventsProcessed, EventsQuery,} from "src/interfaces/block-chain-service";
-import {slashSplit} from "src/utils/string";
 import {DB_BOUNTY_NOT_FOUND, NETWORK_NOT_FOUND} from "../utils/messages.const";
 import {handleBenefactors} from "src/modules/handle-benefactors";
 import BigNumber from "bignumber.js";
@@ -11,22 +9,16 @@ import {DecodedLog} from "../interfaces/block-sniffer";
 import {getBountyFromChain, getNetwork, parseLogWithContext} from "../utils/block-process";
 import {sendMessageToTelegramChannels} from "../integrations/telegram";
 import {BOUNTY_STATE_CHANGED} from "../integrations/telegram/messages";
-import {pull_requests} from "src/db/models/pull_requests";
+import {updateBountiesHeader} from "src/modules/handle-header-information";
+import {Push} from "../services/analytics/push";
+import {AnalyticEventName} from "../services/analytics/types/events";
 
 export const name = "getBountyCanceledEvents";
 export const schedule = "*/11 * * * *";
 export const description = "Move to 'Canceled' status the bounty";
 export const author = "clarkjoao";
 
-async function closeAndRemovePullRequests(pullRequests: pull_requests[], owner: string, repo: string) {
-  for (const pr of pullRequests) {
-    await GHService.pullrequestClose(owner, repo, pr.githubId as string);
-    await pr.destroy()
-  }
-}
-
 export async function action(block: DecodedLog, query?: EventsQuery): Promise<EventsProcessed> {
-
   const eventsProcessed: EventsProcessed = {};
   const {returnValues: {id}, connection, address, chainId} = block;
 
@@ -41,12 +33,10 @@ export async function action(block: DecodedLog, query?: EventsQuery): Promise<Ev
   }
 
   const dbBounty = await db.issues.findOne({
-    where: {contractId: block.returnValues.id, issueId: bounty.cid, network_id: network.id,},
+    where: {contractId: block.returnValues.id, network_id: network.id,},
     include: [
-      {association: "repository"},
       {association: "benefactors"},
-      {association: "network"},
-      {association: "pull_requests", required: false},
+      {association: "network"}
     ],
   });
 
@@ -55,31 +45,18 @@ export async function action(block: DecodedLog, query?: EventsQuery): Promise<Ev
     return eventsProcessed;
   }
 
-  if (!dbBounty.githubId) {
-    logger.warn(`${name} Bounty ${bounty.id} missing githubId`, bounty);
-    return eventsProcessed
-  }
   const fundingAmount = dbBounty?.fundingAmount !== '0' ? dbBounty?.fundingAmount : undefined
   const fundedAmount = dbBounty?.fundedAmount !== '0' ? dbBounty?.fundedAmount : undefined
   const isFunded = BigNumber(fundingAmount || 0).isEqualTo(BigNumber(fundedAmount || 1))
   const isHardCancel = ['open', 'ready'].includes(dbBounty?.state || '') && (dbBounty.fundingAmount === ('0' || undefined) || isFunded)
 
   if(isHardCancel) {
-    const [owner, repo] = slashSplit(dbBounty?.repository?.githubPath);
-
-    if(dbBounty?.pull_requests.length > 0) 
-      closeAndRemovePullRequests(dbBounty?.pull_requests, owner, repo)
+    if(dbBounty?.deliverables.length > 0) 
+      for (const dr of dbBounty?.deliverables) {
+        await dr.destroy()
+      }
       
-    await GHService.issueClose(repo, owner, dbBounty?.githubId)
-    const body = "Governor chose to remove your bounty from listing, please contact governance for more information";
-    await GHService.createCommentOnIssue(repo, owner, dbBounty?.githubId, body);
   }
-
-
-  const [owner, repo] = slashSplit(dbBounty.repository.githubPath);
-
-  await GHService.issueClose(repo, owner, dbBounty.githubId)
-    .catch(e => logger.error(`${name} Failed to close ${owner}/${repo}/issues/${dbBounty.githubId}`, e?.message || e.toString()));
 
   dbBounty.state = `canceled`;
 
@@ -92,11 +69,16 @@ export async function action(block: DecodedLog, query?: EventsQuery): Promise<Ev
   sendMessageToTelegramChannels(BOUNTY_STATE_CHANGED(dbBounty.state, dbBounty));
 
   await updateLeaderboardBounties("canceled");
+  await updateBountiesHeader();
 
   eventsProcessed[network.name!] = {
-    [dbBounty.issueId!.toString()]: {bounty: dbBounty, eventBlock: parseLogWithContext(block)}
+    [dbBounty.id!.toString()]: {bounty: dbBounty, eventBlock: parseLogWithContext(block)}
   };
 
+  Push.event(AnalyticEventName.BOUNTY_CANCELED, {
+    chainId, network: {name: network.name, id: network.id},
+    bountyId: dbBounty.id, bountyContractId: bounty.id
+  })
 
   return eventsProcessed;
 }

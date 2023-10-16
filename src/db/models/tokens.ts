@@ -1,9 +1,9 @@
 import * as Sequelize from 'sequelize';
-import { DataTypes, Model, Optional } from 'sequelize';
-import type { chains, chainsId } from './chains';
-import type { issues, issuesId } from './issues';
-import type { network_tokens, network_tokensId } from './network_tokens';
-import type { networks, networksId } from './networks';
+import {DataTypes, Model, Optional} from 'sequelize';
+import type {chains, chainsId} from './chains';
+import type {issues, issuesId} from './issues';
+import type {network_tokens, network_tokensId} from './network_tokens';
+import type {networks, networksId} from './networks';
 
 export interface tokensAttributes {
   id: number;
@@ -13,12 +13,13 @@ export interface tokensAttributes {
   isTransactional: boolean;
   isAllowed?: boolean;
   chain_id?: number;
+  minimum?: string;
   isReward: boolean;
 }
 
 export type tokensPk = "id";
 export type tokensId = tokens[tokensPk];
-export type tokensOptionalAttributes = "id" | "isAllowed" | "chain_id";
+export type tokensOptionalAttributes = "id" | "isAllowed" | "chain_id" | "minimum";
 export type tokensCreationAttributes = Optional<tokensAttributes, tokensOptionalAttributes>;
 
 export class tokens extends Model<tokensAttributes, tokensCreationAttributes> implements tokensAttributes {
@@ -29,6 +30,7 @@ export class tokens extends Model<tokensAttributes, tokensCreationAttributes> im
   isTransactional!: boolean;
   isAllowed?: boolean;
   chain_id?: number;
+  minimum?: string;
   isReward!: boolean;
 
   // tokens belongsTo chains via chain_id
@@ -121,6 +123,11 @@ export class tokens extends Model<tokensAttributes, tokensCreationAttributes> im
         model: 'chains',
         key: 'chainId'
       }
+    },
+    minimum: {
+      type: DataTypes.STRING(255),
+      allowNull: true,
+      defaultValue: "0"
     },
     isReward: {
       type: DataTypes.BOOLEAN,
