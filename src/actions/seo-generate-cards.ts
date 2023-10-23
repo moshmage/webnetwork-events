@@ -6,13 +6,14 @@ import logger from "src/utils/logger-handler";
 import {getChainsRegistryAndNetworks} from "../utils/block-process";
 import {subMinutes} from "date-fns";
 import { isIpfsEnvs } from "src/utils/ipfs-envs-verify";
+import { getDeveloperAmount } from "src/modules/calculate-distributed-amounts";
 
 export const name = "seo-generate-cards";
 export const schedule = "*/10 * * * *";
 export const description = "Try generate SeoCards for all updated or new bounties";
 export const author = "clarkjoao";
 
-export async function action(issueId?: string) {
+export async function action(params) {
   const bountiesProcessed: any[] = [];
 
   if (!isIpfsEnvs) {
@@ -21,7 +22,7 @@ export async function action(issueId?: string) {
   }
 
   const entries = await getChainsRegistryAndNetworks();
-  for (const [, {chainId: chain_id,}] of entries) {
+  for (const [web3Host, { chainId: chain_id }] of entries) {
     try {
       logger.info(`${name} start`);
 
@@ -32,8 +33,8 @@ export async function action(issueId?: string) {
 
       const where = {
         chain_id,
-        ...issueId
-          ? {issueId: {[Op.iLike]: issueId}}
+        ...params?.issueId
+          ? {issueId: {[Op.iLike]: params?.issueId}}
           : {
             [Op.or]: [
               {seoImage: null},
@@ -61,22 +62,26 @@ export async function action(issueId?: string) {
 
       for (const bounty of bounties) {
         try {
-          logger.debug(`${name} Creating card to bounty ${bounty.issueId}`);
-          const card = await generateCard(bounty);
+          logger.debug(`${name} Creating card to bounty ${bounty.id}`);
+          const workerAmount = await getDeveloperAmount(bounty, web3Host);
+          bounty.amount = workerAmount;
+          const card = await generateCard({
+            issue: bounty
+          });
 
           const {hash} = await ipfsService.add(card);
           if (!hash) {
-            logger.warn(`${name} Failed to get hash from IPFS for ${bounty.issueId}`);
+            logger.warn(`${name} Failed to get hash from IPFS for ${bounty.id}`);
             continue;
           }
 
           await bounty.update({seoImage: hash});
 
-          bountiesProcessed.push({issueId: bounty.issueId, hash});
+          bountiesProcessed.push({issueId: bounty.id, hash});
 
-          logger.debug(`${name} Bounty card for ${bounty.issueId} has been updated`);
+          logger.debug(`${name} Bounty card for ${bounty.id} has been updated`);
         } catch (error: any) {
-          logger.error(`${name} Error generating card for ${bounty.issueId}`, error);
+          logger.error(`${name} Error generating card for ${bounty.id}`, error);
           continue;
         }
       }
