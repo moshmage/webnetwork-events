@@ -8,6 +8,7 @@ import type { developers, developersId } from './developers';
 import type { disputes, disputesId } from './disputes';
 import type { merge_proposals, merge_proposalsId } from './merge_proposals';
 import type { networks, networksId } from './networks';
+import type { pull_requests, pull_requestsId } from './pull_requests';
 import type { repositories, repositoriesId } from './repositories';
 import type { tokens, tokensId } from './tokens';
 import type { users, usersId } from './users';
@@ -170,6 +171,18 @@ export class issues extends Model<issuesAttributes, issuesCreationAttributes> im
   hasMerge_proposal!: Sequelize.HasManyHasAssociationMixin<merge_proposals, merge_proposalsId>;
   hasMerge_proposals!: Sequelize.HasManyHasAssociationsMixin<merge_proposals, merge_proposalsId>;
   countMerge_proposals!: Sequelize.HasManyCountAssociationsMixin;
+  // issues hasMany pull_requests via issueId
+  pull_requests!: pull_requests[];
+  getPull_requests!: Sequelize.HasManyGetAssociationsMixin<pull_requests>;
+  setPull_requests!: Sequelize.HasManySetAssociationsMixin<pull_requests, pull_requestsId>;
+  addPull_request!: Sequelize.HasManyAddAssociationMixin<pull_requests, pull_requestsId>;
+  addPull_requests!: Sequelize.HasManyAddAssociationsMixin<pull_requests, pull_requestsId>;
+  createPull_request!: Sequelize.HasManyCreateAssociationMixin<pull_requests>;
+  removePull_request!: Sequelize.HasManyRemoveAssociationMixin<pull_requests, pull_requestsId>;
+  removePull_requests!: Sequelize.HasManyRemoveAssociationsMixin<pull_requests, pull_requestsId>;
+  hasPull_request!: Sequelize.HasManyHasAssociationMixin<pull_requests, pull_requestsId>;
+  hasPull_requests!: Sequelize.HasManyHasAssociationsMixin<pull_requests, pull_requestsId>;
+  countPull_requests!: Sequelize.HasManyCountAssociationsMixin;
   // issues hasMany users_payments via issueId
   users_payments!: users_payments[];
   getUsers_payments!: Sequelize.HasManyGetAssociationsMixin<users_payments>;
