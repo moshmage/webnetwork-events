@@ -34,13 +34,21 @@ export async function action(block: DecodedLog<OraclesTransferEvent['returnValue
 
   const councilAmount = await service.councilAmount();
 
-  const curators =
-    await Promise.all(
-      [fromAddress, toAddress].map((address) =>
-        service.getOraclesResume(address)
-        .then(resume => handleCurators(address, resume, councilAmount, dbNetwork.id))));
+  let curators: string[] = []
 
-  eventsProcessed[dbNetwork.name!] = curators.filter(e => e).length === 2 ? [fromAddress, toAddress] : []
+  for (const address of [fromAddress, toAddress]){
+    const resume = await service.getOraclesResume(address);
+
+    if(!resume)
+      logger.warn(`${name} Could not find getOraclesResume ${address} - ${dbNetwork.networkAddress} - ${connection}`);
+
+    const curator = await handleCurators(address, resume, councilAmount, dbNetwork.id)
+
+    if(curator)
+      curators.push(curator?.address)  
+  }
+
+  eventsProcessed[dbNetwork.name!] = curators
 
   Push.event(AnalyticEventName.DELEGATE_UNDELEGATE, {
     chainId, network: {network: dbNetwork.name, id: dbNetwork.id}, currency: await service.networkToken.symbol(),
