@@ -115,7 +115,7 @@ export async function action(block: DecodedLog<BountyCreatedEvent['returnValues'
           const workerAmount = await getDeveloperAmount(dbBounty, chain.chainRpc);
           const card = await generateCard({
             issue: {
-              ...dbBounty,
+              ...dbBounty.toJSON(),
               amount: workerAmount
             },
             symbol,
