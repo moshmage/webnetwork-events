@@ -64,9 +64,11 @@ export async function action(params) {
         try {
           logger.debug(`${name} Creating card to bounty ${bounty.id}`);
           const workerAmount = await getDeveloperAmount(bounty, web3Host);
-          bounty.amount = workerAmount;
           const card = await generateCard({
-            issue: bounty
+            issue: {
+              ...bounty.toJSON(),
+              amount: workerAmount
+            }
           });
 
           const {hash} = await ipfsService.add(card);
