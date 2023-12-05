@@ -15,9 +15,9 @@ export interface tokensAttributes {
   isAllowed?: boolean;
   chain_id?: number;
   minimum?: string;
+  isReward: boolean;
   last_price_used?: object;
   icon?: string;
-  isReward: boolean;
 }
 
 export type tokensPk = "id";
@@ -34,9 +34,9 @@ export class tokens extends Model<tokensAttributes, tokensCreationAttributes> im
   isAllowed?: boolean;
   chain_id?: number;
   minimum?: string;
+  isReward!: boolean;
   last_price_used?: object;
   icon?: string;
-  isReward!: boolean;
 
   // tokens belongsTo chains via chain_id
   chain!: chains;
@@ -158,7 +158,7 @@ export class tokens extends Model<tokensAttributes, tokensCreationAttributes> im
     icon: {
       type: DataTypes.STRING(255),
       allowNull: true
-    },
+    }
   }, {
     tableName: 'tokens',
     schema: 'public',
