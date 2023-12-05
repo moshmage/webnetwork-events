@@ -65,7 +65,7 @@ export async function action(block: DecodedLog<BountyProposalCreatedEvent['retur
     contractCreationDate: proposal.creationDate.toString(),
     issueId: dbBounty.id,
     deliverableId: dbDeliverable.id,
-    githubLogin: dbUser?.githubLogin,
+    handle: dbUser?.handle,
     creator: proposal.creator,
     isDisputed: false,
     contractId: proposal.id,

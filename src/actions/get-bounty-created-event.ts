@@ -164,7 +164,7 @@ export async function action(block: DecodedLog<BountyCreatedEvent['returnValues'
     currency: dbBounty.transactionalToken?.symbol,
     reward: dbBounty.rewardToken?.symbol,
     creator: block.returnValues.creator,
-    username: dbBounty.user?.githubLogin,
+    username: dbBounty.user?.handle,
     bountyId: dbBounty.id,
     bountyChainId: bounty.id
   })
