@@ -26,7 +26,7 @@ export class EmailNotification<Payload = any> {
           ? this.targets.filter(u => u.user_settings?.[0].notifications)
           : (await db.users.findAll({
             where: {email: {[Op.not]: ""}},
-            include: [{association: "settings", where: {notifications: true}, required: true}],
+            include: [{association: "user_settings", where: {notifications: true}, required: true}],
             raw: true
           }))
             .filter(u => u.email)
