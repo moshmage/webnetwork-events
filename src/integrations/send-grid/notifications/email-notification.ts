@@ -50,7 +50,7 @@ export class EmailNotification<Payload = any> {
         })
 
       await EmailService.sendEmail(
-        format(EmailNotificationSubjects[this.templateName]!, (this.payload as any).network.name),
+        format(EmailNotificationSubjects[this.templateName]!, (this.payload as any)?.network?.name ?? "BEPRO"),
         [to],
         new Templater().compile({...this.payload, template: this.templateName, uuid})
       );

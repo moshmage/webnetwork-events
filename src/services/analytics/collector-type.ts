@@ -25,7 +25,7 @@ export function getCollector({type}: Analytic): Collector | null {
         return null;
     }
   } catch (e) {
-    error(`Failed to return collector`, e?.toString());
+    error(`Failed to return collector ${type}`, e?.toString());
     return null;
   }
 }

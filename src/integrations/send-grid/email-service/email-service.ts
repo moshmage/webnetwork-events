@@ -1,7 +1,7 @@
 import MailService from "@sendgrid/mail";
 import process from "process";
 import {ClientResponse} from "@sendgrid/client/src/response";
-import loggerHandler from "../../../utils/logger-handler";
+import {debug, info, warn} from "../../../utils/logger-handler";
 
 const {NEXT_SENDGRID_MAIL_API_KEY, NEXT_SENDGRID_MAIL_FROM} = process.env;
 
@@ -18,19 +18,19 @@ class EmailServiceFactory {
 
   async sendEmail(subject: string, bcc: string | string[], html: string): Promise<ClientResponse> {
     return new Promise((p, f) => {
-      loggerHandler.debug(`Sending email (${subject})`);
+      debug(`Sending email (${subject})`);
 
-      const sendCallback = (error: Error, [result,]: [ClientResponse, {}]) => {
-        if (error) {
-          f(error);
-          loggerHandler.error(`Failed to send email to ${bcc.toString()} (${subject})`, error?.toString());
+      const sendCallback = (e: Error, result: [ClientResponse, {}]) => {
+        if (e) {
+          warn(`Failed to send email to ${bcc.toString()} (${subject})`);
+          f(e);
         } else {
-          p(result);
-          loggerHandler.debug(`Sent email (${subject})`);
+          info(`Sent email to ${bcc.toString()} (${subject})`);
+          p(result[0]);
         }
       }
 
-      MailService.send({subject, text: subject, html, bcc, from: NEXT_SENDGRID_MAIL_FROM!}, false, sendCallback)
+      MailService.send({subject, html, bcc, from: NEXT_SENDGRID_MAIL_FROM!}, false, sendCallback)
     });
   }
 }

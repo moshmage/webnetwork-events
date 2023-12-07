@@ -12,11 +12,12 @@ export class NotificationCollector implements Collector<undefined, ClientRespons
   readonly collector: undefined;
 
   collect(events: CollectEventPayload[]): Promise<any> {
+
     const _collect = (event: CollectEventPayload) =>
       new EmailNotification(event.name as AnalyticEventName, event.params, event?.params?.target)
         .send()
         .catch(e => {
-          loggerHandler.error(ErrorMessages.FailedToCollectEmailNotification, e?.toString())
+          loggerHandler.error(ErrorMessages.FailedToCollectEmailNotification, e?.stack)
         })
 
     return Promise.allSettled(events.map(_collect))

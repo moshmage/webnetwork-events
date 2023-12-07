@@ -4,36 +4,39 @@ import process from "process";
 import {EmailNotificationSubjects} from "./templates/email-info";
 import {format} from "node:util";
 import {debug} from "../../../utils/logger-handler";
+import Handlebars from "handlebars";
 
 export class Templater {
 
   constructor() {
   }
 
-  readonly basePath = "src/integrations/notifications/templates/handlebars/";
+  readonly basePath = "src/integrations/send-grid/notifications/templates/handlebars/";
 
   getFilePath(file: string) {
     return this.basePath.concat(file);
   }
 
-  compile(payload: any) {
-    const templateData = {
-      pageTitle: format(EmailNotificationSubjects[payload.template], payload.network.name),
-      notificationTitleHeading: format(EmailNotificationSubjects[payload.template], payload.network.name),
-      taskTitleParagraph: payload.title,
-      actionHref: `https://app.bepro.network/${payload.network.name}/task/${payload.bountyId}/?fromEmail=${payload.uuid}`
-    };
-
-    debug(`Templater html`, this.html)
-
-    Handlebars.registerPartial("styles", Handlebars.compile(this.getHtmlOf(this.getFilePath("partials/styles.hbs"))));
-    Handlebars.registerPartial("logo", Handlebars.compile(this.getHtmlOf(this.getFilePath("partials/logo.hbs"))));
-
-    return Handlebars.compile(this.html)(templateData, {allowProtoPropertiesByDefault: true});
-  }
 
   get html() {
     return this.getHtmlOf("base-template.hbs");
+  }
+
+  compile(payload: any) {
+
+    const title = format(EmailNotificationSubjects[payload.template], payload?.network?.name ?? "BEPRO");
+
+    const templateData = {
+      pageTitle: title,
+      notificationTitleHeading: title,
+      taskTitleParagraph: payload.title,
+      actionHref: `https://app.bepro.network/${payload?.network?.name ?? "BEPRO"}/task/${payload.bountyId}/?fromEmail=${payload.uuid}`
+    };
+
+    Handlebars.registerPartial("styles", Handlebars.compile(this.getHtmlOf("partials/styles.hbs")));
+    Handlebars.registerPartial("logo", Handlebars.compile(this.getHtmlOf("partials/logo.hbs")));
+
+    return Handlebars.compile(this.html)(templateData, {allowProtoPropertiesByDefault: true});
   }
 
   private getHtmlOf(path: string) {
@@ -43,6 +46,5 @@ export class Templater {
 
     return readFileSync(resolved, "utf-8");
   }
-
 
 }

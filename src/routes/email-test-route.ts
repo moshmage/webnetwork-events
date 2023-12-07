@@ -11,7 +11,7 @@ router.get(`/:task`, async (req, res) => {
   const bounty = await db.issues.findOne({where: {contractId: +task}});
 
   if (!bounty)
-    return res.status(400);
+    return res.status(400).json({message: "nok"});
 
   await Push.event(+bounty?.fundingAmount! > 0 ? AnalyticEventName.FUNDING_REQUEST_CREATED : AnalyticEventName.BOUNTY_CREATED, {
     currency: bounty.transactionalToken?.symbol,
@@ -20,6 +20,8 @@ router.get(`/:task`, async (req, res) => {
     bountyChainId: bounty.id,
     title: bounty.title,
   })
+
+  return res.status(200).json({"message": "ok"})
 });
 
 export default router;
