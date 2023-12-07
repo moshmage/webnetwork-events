@@ -3,24 +3,20 @@ import {join, resolve} from "node:path";
 import process from "process";
 import {EmailNotificationSubjects} from "./templates/email-info";
 import {format} from "node:util";
+import {debug} from "../../../utils/logger-handler";
 
 export class Templater {
 
-  constructor(readonly file: string) {
+  constructor() {
   }
 
   readonly basePath = "src/integrations/notifications/templates/handlebars/";
-
-  get html() {
-    return this.getHtmlOf("base-template.hbs");
-  }
 
   getFilePath(file: string) {
     return this.basePath.concat(file);
   }
 
   compile(payload: any) {
-
     const templateData = {
       pageTitle: format(EmailNotificationSubjects[payload.template], payload.network.name),
       notificationTitleHeading: format(EmailNotificationSubjects[payload.template], payload.network.name),
@@ -29,13 +25,22 @@ export class Templater {
     };
 
     Handlebars.registerPartial("styles", Handlebars.compile(this.getHtmlOf(this.getFilePath("partials/styles.hbs"))));
-    Handlebars.registerPartial("logo", Handlebars.compile(this.getHtmlOf(this.getFilePath("partials/styles.hbs"))));
+    Handlebars.registerPartial("logo", Handlebars.compile(this.getHtmlOf(this.getFilePath("partials/logo.hbs"))));
 
     return Handlebars.compile(this.html)(templateData, {allowProtoPropertiesByDefault: true});
   }
 
-  private getHtmlOf(path: string) {
-    return readFileSync(resolve(join(process.cwd(), this.getFilePath(path), this.file)), "utf-8")
+  get html() {
+    return this.getHtmlOf("base-template.hbs");
   }
+
+  private getHtmlOf(path: string) {
+    const resolved = resolve(join(process.cwd(), this.getFilePath(path)))
+
+    debug(`Templater reading ${resolved}`);
+
+    return readFileSync(resolved, "utf-8");
+  }
+
 
 }
