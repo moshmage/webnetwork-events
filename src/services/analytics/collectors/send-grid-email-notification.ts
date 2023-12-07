@@ -7,7 +7,7 @@ import {ErrorMessages} from "../../../types/error-messages";
 import {AnalyticEventName} from "../types/events";
 import {ClientResponse} from "@sendgrid/client/src/response";
 
-export class NotificationCollector implements Collector<undefined, ClientResponse[]> {
+export class SendGridEmailNotification implements Collector<undefined, ClientResponse[]> {
   readonly type = AnalyticTypes.EmailNotification;
   readonly collector: undefined;
 
