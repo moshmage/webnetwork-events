@@ -2,12 +2,16 @@ import {Router} from "express";
 import {Push} from "../services/analytics/push";
 import {AnalyticEventName} from "../services/analytics/types/events";
 import db from "../db";
+import process from "process";
 
 const router = Router();
 
 router.get(`/:task`, async (req, res) => {
-  const {task} = req.params;
 
+  if (!process.env.TEST_EMAIL)
+    return res.status(400).json({message: "not enabled"})
+
+  const {task} = req.params;
   const bounty = await db.issues.findOne({where: {contractId: +task}});
 
   if (!bounty)
