@@ -8,6 +8,7 @@ const router = Router();
 router.use("/seo", seoRoutes);
 
 router.use(`/read/`, readRouter);
+router.use(`/test-email/`, readRouter);
 
 router.use("/", async (req, res) => {
   const info = await getChainsRegistryAndNetworks();

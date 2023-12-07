@@ -5,8 +5,8 @@ import db from "../db";
 
 const router = Router();
 
-router.get(`/test-email/:name/:task`, async (req, res) => {
-  const {name, task} = req.params;
+router.get(`/:task`, async (req, res) => {
+  const {task} = req.params;
 
   const bounty = await db.issues.findOne({where: {id: +task}});
 
@@ -20,4 +20,6 @@ router.get(`/test-email/:name/:task`, async (req, res) => {
     bountyChainId: bounty.id,
     title: bounty.title,
   })
-})
+});
+
+export default router;

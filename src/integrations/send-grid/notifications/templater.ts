@@ -24,6 +24,8 @@ export class Templater {
       actionHref: `https://app.bepro.network/${payload.network.name}/task/${payload.bountyId}/?fromEmail=${payload.uuid}`
     };
 
+    debug(`Templater html`, this.html)
+
     Handlebars.registerPartial("styles", Handlebars.compile(this.getHtmlOf(this.getFilePath("partials/styles.hbs"))));
     Handlebars.registerPartial("logo", Handlebars.compile(this.getHtmlOf(this.getFilePath("partials/logo.hbs"))));
 
