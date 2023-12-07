@@ -8,7 +8,7 @@ const router = Router();
 router.get(`/:task`, async (req, res) => {
   const {task} = req.params;
 
-  const bounty = await db.issues.findOne({where: {id: +task}});
+  const bounty = await db.issues.findOne({where: {contractId: +task}});
 
   if (!bounty)
     return res.status(400);
