@@ -93,8 +93,8 @@ export async function action(block: DecodedLog<BountyPullRequestReadyForReviewEv
 
     const NotificationEvent = {
       name: AnalyticEventName.NOTIF_DELIVERABLE_READY,
-      targets: [...targets, owner],
       params: {
+        targets: [...targets, owner],
         creator: {
           address: dbDeliverable.user.address,
           id: dbDeliverable.user.id,
