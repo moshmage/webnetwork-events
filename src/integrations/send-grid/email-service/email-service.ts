@@ -29,11 +29,13 @@ class EmailServiceFactory {
           p(result[0]);
         }
       }
+
       const [to, ...bcc] = Array.isArray(_bcc) ? _bcc : [_bcc];
       MailService.send({
         subject,
         html,
-        to, ...bcc.length ? {bcc} : {},
+        to,
+        ...bcc.length ? {bcc} : {},
         from: NEXT_SENDGRID_MAIL_FROM!
       }, false, sendCallback)
     });
