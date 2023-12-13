@@ -5,7 +5,7 @@ import type {curators, curatorsId} from './curators';
 import type {deliverables, deliverablesId} from './deliverables';
 import type {issues, issuesId} from './issues';
 import type {kyc_sessions, kyc_sessionsId} from './kyc_sessions';
-import type {notifications, notificationsId} from './notifications';
+import type {notifications} from './notifications';
 import type {user_settings, user_settingsId} from './user_settings';
 import type {users_locked_registry, users_locked_registryId} from './users_locked_registry';
 
@@ -102,14 +102,6 @@ export class users extends Model<usersAttributes, usersCreationAttributes> imple
   // users hasMany notifications via userId
   notifications!: notifications[];
   getNotifications!: Sequelize.HasManyGetAssociationsMixin<notifications>;
-  setNotifications!: Sequelize.HasManySetAssociationsMixin<notifications, notificationsId>;
-  addNotification!: Sequelize.HasManyAddAssociationMixin<notifications, notificationsId>;
-  addNotifications!: Sequelize.HasManyAddAssociationsMixin<notifications, notificationsId>;
-  createNotification!: Sequelize.HasManyCreateAssociationMixin<notifications>;
-  removeNotification!: Sequelize.HasManyRemoveAssociationMixin<notifications, notificationsId>;
-  removeNotifications!: Sequelize.HasManyRemoveAssociationsMixin<notifications, notificationsId>;
-  hasNotification!: Sequelize.HasManyHasAssociationMixin<notifications, notificationsId>;
-  hasNotifications!: Sequelize.HasManyHasAssociationsMixin<notifications, notificationsId>;
   countNotifications!: Sequelize.HasManyCountAssociationsMixin;
   // users hasMany user_settings via userId
   user_settings!: user_settings[];
