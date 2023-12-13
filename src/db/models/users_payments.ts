@@ -1,6 +1,6 @@
 import * as Sequelize from 'sequelize';
-import { DataTypes, Model, Optional } from 'sequelize';
-import type { issues, issuesId } from './issues';
+import {DataTypes, Model, Optional} from 'sequelize';
+import type {issues, issuesId} from './issues';
 
 export interface users_paymentsAttributes {
   id: number;
@@ -34,45 +34,45 @@ export class users_payments extends Model<users_paymentsAttributes, users_paymen
 
   static initModel(sequelize: Sequelize.Sequelize): typeof users_payments {
     return sequelize.define('users_payments', {
-    id: {
-      autoIncrement: true,
-      type: DataTypes.INTEGER,
-      allowNull: false,
-      primaryKey: true
-    },
-    address: {
-      type: DataTypes.STRING(255),
-      allowNull: false
-    },
-    ammount: {
-      type: DataTypes.INTEGER,
-      allowNull: false
-    },
-    issueId: {
-      type: DataTypes.INTEGER,
-      allowNull: false,
-      references: {
-        model: 'issues',
-        key: 'id'
-      }
-    },
-    transactionHash: {
-      type: DataTypes.STRING(255),
-      allowNull: true
-    }
-  }, {
-    tableName: 'users_payments',
-    schema: 'public',
-    timestamps: true,
-    indexes: [
-      {
-        name: "users_payments_pkey",
-        unique: true,
-        fields: [
-          { name: "id" },
-        ]
+      id: {
+        autoIncrement: true,
+        type: DataTypes.INTEGER,
+        allowNull: false,
+        primaryKey: true
       },
-    ]
-  }) as typeof users_payments;
+      address: {
+        type: DataTypes.STRING(255),
+        allowNull: false
+      },
+      ammount: {
+        type: DataTypes.INTEGER,
+        allowNull: false
+      },
+      issueId: {
+        type: DataTypes.INTEGER,
+        allowNull: false,
+        references: {
+          model: 'issues',
+          key: 'id'
+        }
+      },
+      transactionHash: {
+        type: DataTypes.STRING(255),
+        allowNull: true
+      }
+    }, {
+      tableName: 'users_payments',
+      schema: 'public',
+      timestamps: true,
+      indexes: [
+        {
+          name: "users_payments_pkey",
+          unique: true,
+          fields: [
+            {name: "id"},
+          ]
+        },
+      ]
+    }) as typeof users_payments;
   }
 }

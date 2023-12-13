@@ -1,5 +1,5 @@
 import * as Sequelize from 'sequelize';
-import { DataTypes, Model, Optional } from 'sequelize';
+import {DataTypes, Model} from 'sequelize';
 
 export interface SequelizeMetaAttributes {
   name: string;
@@ -15,24 +15,24 @@ export class SequelizeMeta extends Model<SequelizeMetaAttributes, SequelizeMetaC
 
   static initModel(sequelize: Sequelize.Sequelize): typeof SequelizeMeta {
     return sequelize.define('SequelizeMeta', {
-    name: {
-      type: DataTypes.STRING(255),
-      allowNull: false,
-      primaryKey: true
-    }
-  }, {
-    tableName: 'SequelizeMeta',
-    schema: 'public',
-    timestamps: false,
-    indexes: [
-      {
-        name: "SequelizeMeta_pkey",
-        unique: true,
-        fields: [
-          { name: "name" },
-        ]
-      },
-    ]
-  }) as typeof SequelizeMeta;
+      name: {
+        type: DataTypes.STRING(255),
+        allowNull: false,
+        primaryKey: true
+      }
+    }, {
+      tableName: 'SequelizeMeta',
+      schema: 'public',
+      timestamps: false,
+      indexes: [
+        {
+          name: "SequelizeMeta_pkey",
+          unique: true,
+          fields: [
+            {name: "name"},
+          ]
+        },
+      ]
+    }) as typeof SequelizeMeta;
   }
 }

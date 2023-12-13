@@ -10,6 +10,7 @@ import {BOUNTY_STATE_CHANGED} from "../integrations/telegram/messages";
 import {Push} from "../services/analytics/push";
 import {AnalyticEventName} from "../services/analytics/types/events";
 import updateSeoCardBounty from "src/modules/handle-seo-card";
+import {Op} from "sequelize";
 
 export const name = "getBountyPullRequestReadyForReviewEvents";
 export const schedule = "*/12 * * * *";
@@ -71,12 +72,48 @@ export async function action(block: DecodedLog<BountyPullRequestReadyForReviewEv
     [dbBounty.id!.toString()]: {bounty: dbBounty, eventBlock: parseLogWithContext(block)}
   };
 
-  Push.event(AnalyticEventName.PULL_REQUEST_READY, {
-    chainId, network: {name: network.name, id: network.id},
-    bountyId: dbBounty.id, bountyContractId: dbBounty.contractId,
-    deliverableId: dbDeliverable.id, deliverableContractId: pullRequestId,
-    actor: pullRequest.creator,
-  })
+  /** Create a non-blocking scope, so that we can await for targets but let the fn end */
+  (async () => {
+    const owner = await dbBounty!.getUser({attributes: ["email", "id", "user_settings"], raw: true});
+    const targets =
+      await dbBounty!.network.getCurators({
+        include: [{association: "user", attributes: ["email", "id", "user_settings"]}],
+          where: {userId: {[Op.not]: owner.id}}
+      });
+
+    const AnalyticEvent = {
+      name: AnalyticEventName.PULL_REQUEST_READY,
+      params: {
+        chainId, network: {name: network.name, id: network.id},
+        bountyId: dbBounty.id, bountyContractId: dbBounty.contractId,
+        deliverableId: dbDeliverable.id, deliverableContractId: pullRequestId,
+        actor: pullRequest.creator,
+      }
+    }
+
+    const NotificationEvent = {
+      name: AnalyticEventName.NOTIF_DELIVERABLE_READY,
+      params: {
+        targets: [...targets, owner],
+        creator: {
+          address: dbDeliverable.user.address,
+          id: dbDeliverable.user.id,
+          username: dbDeliverable.user.handle,
+        },
+        task: {
+          id: dbDeliverable.bountyId,
+          title: dbBounty.title,
+        },
+        deliverable: {
+          title: dbDeliverable.title,
+          id: dbDeliverable.id,
+          updatedAt: dbDeliverable.updatedAt
+        }
+      }
+    }
+
+    Push.events([AnalyticEvent, NotificationEvent])
+  })()
 
 
   return eventsProcessed;

@@ -20,8 +20,8 @@ import {tokens} from "src/db/models/tokens";
 import {isIpfsEnvs} from "src/utils/ipfs-envs-verify";
 import {Push} from "../services/analytics/push";
 import {AnalyticEventName} from "../services/analytics/types/events";
-import { getDeveloperAmount } from "src/modules/calculate-distributed-amounts";
-import { getCoinIconByChainAndContractAddress } from "src/services/coingecko";
+import {getDeveloperAmount} from "src/modules/calculate-distributed-amounts";
+import {getCoinIconByChainAndContractAddress} from "src/services/coingecko";
 
 
 export const name = "getBountyCreatedEvents";
@@ -158,16 +158,41 @@ export async function action(block: DecodedLog<BountyCreatedEvent['returnValues'
 
   const {tokenAmount, fundingAmount, rewardAmount, rewardToken, transactional} = bounty;
 
-  Push.event(+bounty.fundingAmount > 0 ? AnalyticEventName.FUNDING_REQUEST_CREATED : AnalyticEventName.BOUNTY_CREATED, {
-    chainId, network: {name: network.name, id: network.id},
-    tokenAmount, fundingAmount, rewardAmount, rewardToken, transactional,
-    currency: dbBounty.transactionalToken?.symbol,
-    reward: dbBounty.rewardToken?.symbol,
-    creator: block.returnValues.creator,
-    username: dbBounty.user?.handle,
-    bountyId: dbBounty.id,
-    bountyChainId: bounty.id
-  })
+  const AnalyticsEvent = {
+    name: +bounty.fundingAmount > 0
+      ? AnalyticEventName.FUNDING_REQUEST_CREATED
+      : AnalyticEventName.BOUNTY_CREATED,
+    params: {
+      chainId, network: {name: network.name, id: network.id},
+      tokenAmount, fundingAmount, rewardAmount, rewardToken, transactional,
+      currency: dbBounty.transactionalToken?.symbol,
+      reward: dbBounty.rewardToken?.symbol,
+      creator: block.returnValues.creator,
+      username: dbBounty.user?.handle,
+      bountyId: dbBounty.id,
+      bountyChainId: bounty.id,
+      title: dbBounty.title,
+    }
+  }
+
+  const NotificationEvent = {
+    name: +bounty.fundingAmount > 0
+      ? AnalyticEventName.NOTIF_TASK_FUNDING_CREATED
+      : AnalyticEventName.NOTIF_TASK_CREATED,
+    params: {
+      creator: {
+        address: dbBounty.user?.address,
+        username: dbBounty.user?.handle,
+      },
+      task: {
+        title: dbBounty.title,
+        id: dbBounty.id,
+        createdAt: dbBounty.createdAt
+      }
+    }
+  }
+
+  Push.events([AnalyticsEvent, NotificationEvent]);
 
   return eventsProcessed;
 }

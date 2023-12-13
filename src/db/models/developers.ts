@@ -1,6 +1,6 @@
 import * as Sequelize from 'sequelize';
-import { DataTypes, Model, Optional } from 'sequelize';
-import type { issues, issuesId } from './issues';
+import {DataTypes, Model, Optional} from 'sequelize';
+import type {issues, issuesId} from './issues';
 
 export interface developersAttributes {
   id: number;
@@ -32,41 +32,41 @@ export class developers extends Model<developersAttributes, developersCreationAt
 
   static initModel(sequelize: Sequelize.Sequelize): typeof developers {
     return sequelize.define('developers', {
-    id: {
-      autoIncrement: true,
-      type: DataTypes.INTEGER,
-      allowNull: false,
-      primaryKey: true
-    },
-    githubHandle: {
-      type: DataTypes.STRING(255),
-      allowNull: true
-    },
-    address: {
-      type: DataTypes.STRING(255),
-      allowNull: true
-    },
-    issueId: {
-      type: DataTypes.INTEGER,
-      allowNull: true,
-      references: {
-        model: 'issues',
-        key: 'id'
-      }
-    }
-  }, {
-    tableName: 'developers',
-    schema: 'public',
-    timestamps: true,
-    indexes: [
-      {
-        name: "developers_pkey",
-        unique: true,
-        fields: [
-          { name: "id" },
-        ]
+      id: {
+        autoIncrement: true,
+        type: DataTypes.INTEGER,
+        allowNull: false,
+        primaryKey: true
       },
-    ]
-  }) as typeof developers;
+      githubHandle: {
+        type: DataTypes.STRING(255),
+        allowNull: true
+      },
+      address: {
+        type: DataTypes.STRING(255),
+        allowNull: true
+      },
+      issueId: {
+        type: DataTypes.INTEGER,
+        allowNull: true,
+        references: {
+          model: 'issues',
+          key: 'id'
+        }
+      }
+    }, {
+      tableName: 'developers',
+      schema: 'public',
+      timestamps: true,
+      indexes: [
+        {
+          name: "developers_pkey",
+          unique: true,
+          fields: [
+            {name: "id"},
+          ]
+        },
+      ]
+    }) as typeof developers;
   }
 }
