@@ -25,7 +25,18 @@ export interface merge_proposalsAttributes {
 
 export type merge_proposalsPk = "id";
 export type merge_proposalsId = merge_proposals[merge_proposalsPk];
-export type merge_proposalsOptionalAttributes = "id" | "issueId" | "createdAt" | "updatedAt" | "handle" | "contractId" | "creator" | "network_id" | "contractCreationDate" | "disputeWeight" | "deliverableId";
+export type merge_proposalsOptionalAttributes =
+  "id"
+  | "issueId"
+  | "createdAt"
+  | "updatedAt"
+  | "handle"
+  | "contractId"
+  | "creator"
+  | "network_id"
+  | "contractCreationDate"
+  | "disputeWeight"
+  | "deliverableId";
 export type merge_proposalsCreationAttributes = Optional<merge_proposalsAttributes, merge_proposalsOptionalAttributes>;
 
 export class merge_proposals extends Model<merge_proposalsAttributes, merge_proposalsCreationAttributes> implements merge_proposalsAttributes {
@@ -97,79 +108,79 @@ export class merge_proposals extends Model<merge_proposalsAttributes, merge_prop
 
   static initModel(sequelize: Sequelize.Sequelize): typeof merge_proposals {
     return sequelize.define('merge_proposals', {
-    id: {
-      autoIncrement: true,
-      type: DataTypes.INTEGER,
-      allowNull: false,
-      primaryKey: true
-    },
-    issueId: {
-      type: DataTypes.INTEGER,
-      allowNull: true,
-      references: {
-        model: 'issues',
-        key: 'id'
-      }
-    },
-    handle: {
-      type: DataTypes.STRING(255),
-      allowNull: true
-    },
-    contractId: {
-      type: DataTypes.INTEGER,
-      allowNull: true
-    },
-    creator: {
-      type: DataTypes.STRING(255),
-      allowNull: true
-    },
-    network_id: {
-      type: DataTypes.INTEGER,
-      allowNull: true,
-      references: {
-        model: 'networks',
-        key: 'id'
-      }
-    },
-    contractCreationDate: {
-      type: DataTypes.STRING(255),
-      allowNull: true
-    },
-    disputeWeight: {
-      type: DataTypes.STRING(255),
-      allowNull: true
-    },
-    refusedByBountyOwner: {
-      type: DataTypes.BOOLEAN,
-      allowNull: false,
-      defaultValue: false
-    },
-    isDisputed: {
-      type: DataTypes.BOOLEAN,
-      allowNull: false,
-      defaultValue: false
-    },
-    deliverableId: {
-      type: DataTypes.INTEGER,
-      allowNull: true,
-      references: {
-        model: 'deliverables',
-        key: 'id'
-      }
-    }
-  }, {
-    tableName: 'merge_proposals',
-    schema: 'public',
-    timestamps: true,
-    indexes: [
-      {
-        name: "merge_proposals_pkey",
-        unique: true,
-        fields: [
-          { name: "id" },
-        ]
+      id: {
+        autoIncrement: true,
+        type: DataTypes.INTEGER,
+        allowNull: false,
+        primaryKey: true
       },
-    ]
-  }) as typeof merge_proposals;
+      issueId: {
+        type: DataTypes.INTEGER,
+        allowNull: true,
+        references: {
+          model: 'issues',
+          key: 'id'
+        }
+      },
+      handle: {
+        type: DataTypes.STRING(255),
+        allowNull: true
+      },
+      contractId: {
+        type: DataTypes.INTEGER,
+        allowNull: true
+      },
+      creator: {
+        type: DataTypes.STRING(255),
+        allowNull: true
+      },
+      network_id: {
+        type: DataTypes.INTEGER,
+        allowNull: true,
+        references: {
+          model: 'networks',
+          key: 'id'
+        }
+      },
+      contractCreationDate: {
+        type: DataTypes.STRING(255),
+        allowNull: true
+      },
+      disputeWeight: {
+        type: DataTypes.STRING(255),
+        allowNull: true
+      },
+      refusedByBountyOwner: {
+        type: DataTypes.BOOLEAN,
+        allowNull: false,
+        defaultValue: false
+      },
+      isDisputed: {
+        type: DataTypes.BOOLEAN,
+        allowNull: false,
+        defaultValue: false
+      },
+      deliverableId: {
+        type: DataTypes.INTEGER,
+        allowNull: true,
+        references: {
+          model: 'deliverables',
+          key: 'id'
+        }
+      }
+    }, {
+      tableName: 'merge_proposals',
+      schema: 'public',
+      timestamps: true,
+      indexes: [
+        {
+          name: "merge_proposals_pkey",
+          unique: true,
+          fields: [
+            {name: "id"},
+          ]
+        },
+      ]
+    }) as typeof merge_proposals;
   }
 }

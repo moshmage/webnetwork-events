@@ -33,7 +33,7 @@ export async function action(block: DecodedLog<BountyPullRequestCreatedEvent['re
 
   const dbBounty = await db.issues.findOne({
     where: {contractId: bountyId, network_id: network.id},
-    include: [{association: "network"}]
+    include: [{association: "network"}, {association: "chain"}]
   });
 
   if (!dbBounty) {
@@ -44,7 +44,8 @@ export async function action(block: DecodedLog<BountyPullRequestCreatedEvent['re
   const pullRequest = bounty.pullRequests[pullRequestId];
 
   const dbDeliverable = await db.deliverables.findOne({
-    where: { id: pullRequest.cid }
+    where: { id: pullRequest.cid },
+    include: [{association: 'user'}]
   });
 
   if (!dbDeliverable) {
@@ -67,8 +68,8 @@ export async function action(block: DecodedLog<BountyPullRequestCreatedEvent['re
   };
 
   sendMessageToTelegramChannels(DELIVERABLE_OPEN(dbBounty, dbDeliverable, dbDeliverable.id));
-
-  const targets = [(await dbBounty.getUser({attributes: ["email", "id", "user_settings"], raw: true}))]
+  
+  const targets = [(await dbBounty.getUser({attributes: ["email", "id"], include:[{ association: "user_settings" }] })).get()]
 
   const AnalyticEvent = {
     name: AnalyticEventName.PULL_REQUEST_OPEN,
@@ -90,14 +91,11 @@ export async function action(block: DecodedLog<BountyPullRequestCreatedEvent['re
         id: dbDeliverable.user.id,
         username: dbDeliverable.user.handle,
       },
-      task: {
-        id: dbDeliverable.bountyId,
-        title: dbBounty.title,
-      },
-      deliverable: {
-        title: dbDeliverable.title,
+      notification: {
         id: dbDeliverable.id,
-        createdAt: dbDeliverable.createdAt
+        title: `Deliverable #${dbDeliverable.id} has been created on task #${dbBounty.id}`,
+        network: dbBounty.network.name,
+        link: `${dbBounty.network.name}/${dbBounty.chain.chainShortName}/task/${dbBounty.id}/deliverable/${dbDeliverable.id}`
       }
     }
   }

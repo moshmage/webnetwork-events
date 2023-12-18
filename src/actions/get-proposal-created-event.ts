@@ -113,18 +113,11 @@ export async function action(block: DecodedLog<BountyProposalCreatedEvent['retur
         address: createProposal.creator,
         username: createProposal.handle,
       },
-      task: {
-        id: dbDeliverable.bountyId,
-        title: dbBounty.title,
-      },
-      deliverable: {
-        title: dbDeliverable.title,
-        id: dbDeliverable.id,
-        updatedAt: dbDeliverable.updatedAt
-      },
-      proposal: {
+      notification: {
         id: createProposal.id,
-        distributions: createProposal.proposal_distributions.values()
+        title: `Proposal #${createProposal.id} has been created on task #${dbBounty.id}`,
+        network: dbBounty.network.name,
+        link: `${dbBounty.network.name}/${dbBounty.chain.chainShortName}/task/${dbBounty.id}/proposal/${createProposal.id}`
       }
     }
   }

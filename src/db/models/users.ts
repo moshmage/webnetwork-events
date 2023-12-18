@@ -5,7 +5,7 @@ import type {curators, curatorsId} from './curators';
 import type {deliverables, deliverablesId} from './deliverables';
 import type {issues, issuesId} from './issues';
 import type {kyc_sessions, kyc_sessionsId} from './kyc_sessions';
-import type {notifications} from './notifications';
+import type {notifications, notificationsId} from './notifications';
 import type {user_settings, user_settingsId} from './user_settings';
 import type {users_locked_registry, users_locked_registryId} from './users_locked_registry';
 
@@ -24,7 +24,17 @@ export interface usersAttributes {
 
 export type usersPk = "id";
 export type usersId = users[usersPk];
-export type usersOptionalAttributes = "id" | "address" | "createdAt" | "updatedAt" | "handle" | "resetedAt" | "email" | "isEmailConfirmed" | "emailVerificationCode" | "emailVerificationSentAt";
+export type usersOptionalAttributes =
+  "id"
+  | "address"
+  | "createdAt"
+  | "updatedAt"
+  | "handle"
+  | "resetedAt"
+  | "email"
+  | "isEmailConfirmed"
+  | "emailVerificationCode"
+  | "emailVerificationSentAt";
 export type usersCreationAttributes = Optional<usersAttributes, usersOptionalAttributes>;
 
 export class users extends Model<usersAttributes, usersCreationAttributes> implements usersAttributes {
@@ -102,6 +112,14 @@ export class users extends Model<usersAttributes, usersCreationAttributes> imple
   // users hasMany notifications via userId
   notifications!: notifications[];
   getNotifications!: Sequelize.HasManyGetAssociationsMixin<notifications>;
+  setNotifications!: Sequelize.HasManySetAssociationsMixin<notifications, notificationsId>;
+  addNotification!: Sequelize.HasManyAddAssociationMixin<notifications, notificationsId>;
+  addNotifications!: Sequelize.HasManyAddAssociationsMixin<notifications, notificationsId>;
+  createNotification!: Sequelize.HasManyCreateAssociationMixin<notifications>;
+  removeNotification!: Sequelize.HasManyRemoveAssociationMixin<notifications, notificationsId>;
+  removeNotifications!: Sequelize.HasManyRemoveAssociationsMixin<notifications, notificationsId>;
+  hasNotification!: Sequelize.HasManyHasAssociationMixin<notifications, notificationsId>;
+  hasNotifications!: Sequelize.HasManyHasAssociationsMixin<notifications, notificationsId>;
   countNotifications!: Sequelize.HasManyCountAssociationsMixin;
   // users hasMany user_settings via userId
   user_settings!: user_settings[];
@@ -130,78 +148,78 @@ export class users extends Model<usersAttributes, usersCreationAttributes> imple
 
   static initModel(sequelize: Sequelize.Sequelize): typeof users {
     return sequelize.define('users', {
-    id: {
-      autoIncrement: true,
-      type: DataTypes.INTEGER,
-      allowNull: false,
-      primaryKey: true
-    },
-    address: {
-      type: DataTypes.STRING(255),
-      allowNull: true,
-      unique: "users_address_key"
-    },
-    handle: {
-      type: DataTypes.STRING(255),
-      allowNull: true,
-      unique: "users_githubLogin_key"
-    },
-    resetedAt: {
-      type: DataTypes.DATE,
-      allowNull: true
-    },
-    email: {
-      type: DataTypes.STRING(255),
-      allowNull: true,
-      unique: "users_email_key"
-    },
-    isEmailConfirmed: {
-      type: DataTypes.BOOLEAN,
-      allowNull: true,
-      defaultValue: false
-    },
-    emailVerificationCode: {
-      type: DataTypes.STRING(255),
-      allowNull: true
-    },
-    emailVerificationSentAt: {
-      type: DataTypes.DATE,
-      allowNull: true
-    }
-  }, {
-    tableName: 'users',
-    schema: 'public',
-    timestamps: true,
-    indexes: [
-      {
-        name: "users_address_key",
-        unique: true,
-        fields: [
-          { name: "address" },
-        ]
+      id: {
+        autoIncrement: true,
+        type: DataTypes.INTEGER,
+        allowNull: false,
+        primaryKey: true
       },
-      {
-        name: "users_email_key",
-        unique: true,
-        fields: [
-          { name: "email" },
-        ]
+      address: {
+        type: DataTypes.STRING(255),
+        allowNull: true,
+        unique: "users_address_key"
       },
-      {
-        name: "users_githubLogin_key",
-        unique: true,
-        fields: [
-          { name: "handle" },
-        ]
+      handle: {
+        type: DataTypes.STRING(255),
+        allowNull: true,
+        unique: "users_handle_key"
       },
-      {
-        name: "users_pkey",
-        unique: true,
-        fields: [
-          { name: "id" },
-        ]
+      resetedAt: {
+        type: DataTypes.DATE,
+        allowNull: true
       },
-    ]
-  }) as typeof users;
+      email: {
+        type: DataTypes.STRING(255),
+        allowNull: true,
+        unique: "users_email_key"
+      },
+      isEmailConfirmed: {
+        type: DataTypes.BOOLEAN,
+        allowNull: true,
+        defaultValue: false
+      },
+      emailVerificationCode: {
+        type: DataTypes.STRING(255),
+        allowNull: true
+      },
+      emailVerificationSentAt: {
+        type: DataTypes.DATE,
+        allowNull: true
+      }
+    }, {
+      tableName: 'users',
+      schema: 'public',
+      timestamps: true,
+      indexes: [
+        {
+          name: "users_address_key",
+          unique: true,
+          fields: [
+            {name: "address"},
+          ]
+        },
+        {
+          name: "users_email_key",
+          unique: true,
+          fields: [
+            {name: "email"},
+          ]
+        },
+        {
+          name: "users_handle_key",
+          unique: true,
+          fields: [
+            {name: "handle"},
+          ]
+        },
+        {
+          name: "users_pkey",
+          unique: true,
+          fields: [
+            {name: "id"},
+          ]
+        },
+      ]
+    }) as typeof users;
   }
 }
