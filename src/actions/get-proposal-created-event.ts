@@ -125,7 +125,6 @@ export async function action(block: DecodedLog<BountyProposalCreatedEvent['retur
       },
       proposal: {
         id: createProposal.id,
-        distributions: createProposal.proposal_distributions.values(),
         link: `${dbBounty.network.name}/task/${dbBounty.id}/proposal/${createProposal.id}`,
       }
     }
