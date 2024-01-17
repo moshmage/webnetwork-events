@@ -106,7 +106,7 @@ export async function action(block: DecodedLog<BountyPullRequestReadyForReviewEv
         task: {
           id: dbDeliverable.bountyId,
           title: dbBounty.title,
-          network: dbBounty.network,
+          network: dbBounty.network.name,
         },
         deliverable: {
           title: dbDeliverable.title,
