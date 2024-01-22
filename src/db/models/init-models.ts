@@ -191,6 +191,8 @@ export function initModels(sequelize: Sequelize) {
   issues.hasMany(disputes, {as: "disputes", foreignKey: "issueId"});
   merge_proposals.belongsTo(issues, {as: "issue", foreignKey: "issueId"});
   issues.hasMany(merge_proposals, {as: "merge_proposals", foreignKey: "issueId"});
+  pull_requests.belongsTo(issues, { as: "issue", foreignKey: "issueId"});
+  issues.hasMany(pull_requests, { as: "pull_requests", foreignKey: "issueId"});
   users_payments.belongsTo(issues, {as: "issue", foreignKey: "issueId"});
   issues.hasMany(users_payments, {as: "users_payments", foreignKey: "issueId"});
   comments.belongsTo(merge_proposals, {as: "proposal", foreignKey: "proposalId"});
@@ -209,6 +211,8 @@ export function initModels(sequelize: Sequelize) {
   networks.hasMany(merge_proposals, {as: "merge_proposals", foreignKey: "network_id"});
   network_tokens.belongsTo(networks, {as: "network", foreignKey: "networkId"});
   networks.hasMany(network_tokens, {as: "network_tokens", foreignKey: "networkId"});
+  pull_requests.belongsTo(networks, { as: "network", foreignKey: "network_id"});
+  networks.hasMany(pull_requests, { as: "pull_requests", foreignKey: "network_id"});
   issues.belongsTo(tokens, {as: "rewardToken", foreignKey: "rewardTokenId"});
   tokens.hasMany(issues, {as: "issues", foreignKey: "rewardTokenId"});
   issues.belongsTo(tokens, {as: "transactionalToken", foreignKey: "transactionalTokenId"});

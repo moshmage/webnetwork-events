@@ -1,9 +1,9 @@
 import * as Sequelize from 'sequelize';
-import {DataTypes, Model, Optional} from 'sequelize';
-import type {delegations, delegationsId} from './delegations';
-import type {issues, issuesId} from './issues';
-import type {networks, networksId} from './networks';
-import type {tokens, tokensId} from './tokens';
+import { DataTypes, Model, Optional } from 'sequelize';
+import type { delegations, delegationsId } from './delegations';
+import type { issues, issuesId } from './issues';
+import type { networks, networksId } from './networks';
+import type { tokens, tokensId } from './tokens';
 import type {users_locked_registry, users_locked_registryId} from './users_locked_registry';
 
 export interface chainsAttributes {

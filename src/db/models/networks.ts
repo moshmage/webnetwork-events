@@ -284,12 +284,11 @@ export class networks extends Model<networksAttributes, networksCreationAttribut
         allowNull: true,
         defaultValue: ["(ARRAY[]"]
       },
-      allow_list: {
-        type: DataTypes.ARRAY(DataTypes.STRING),
-        allowNull: true,
-        defaultValue: ["(ARRAY[]"]
-      }
-    }, {
+    allow_list: {
+      type: DataTypes.ARRAY(DataTypes.STRING),
+      allowNull: true,
+      defaultValue: ["(ARRAY[]"]
+    }}, {
       tableName: 'networks',
       schema: 'public',
       timestamps: true,
