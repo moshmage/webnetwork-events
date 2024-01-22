@@ -1,9 +1,9 @@
 import * as Sequelize from 'sequelize';
-import {DataTypes, Model, Optional} from 'sequelize';
-import type {comments, commentsId} from './comments';
-import type {issues, issuesId} from './issues';
-import type {merge_proposals, merge_proposalsId} from './merge_proposals';
-import type {users, usersId} from './users';
+import { DataTypes, Model, Optional } from 'sequelize';
+import type { comments, commentsId } from './comments';
+import type { issues, issuesId } from './issues';
+import type { merge_proposals, merge_proposalsId } from './merge_proposals';
+import type { users, usersId } from './users';
 
 export interface deliverablesAttributes {
   id: number;
@@ -24,16 +24,7 @@ export interface deliverablesAttributes {
 
 export type deliverablesPk = "id";
 export type deliverablesId = deliverables[deliverablesPk];
-export type deliverablesOptionalAttributes =
-  "id"
-  | "canceled"
-  | "markedReadyForReview"
-  | "accepted"
-  | "issueId"
-  | "bountyId"
-  | "prContractId"
-  | "createdAt"
-  | "updatedAt";
+export type deliverablesOptionalAttributes = "id" | "canceled" | "markedReadyForReview" | "accepted" | "issueId" | "bountyId" | "prContractId" | "createdAt" | "updatedAt";
 export type deliverablesCreationAttributes = Optional<deliverablesAttributes, deliverablesOptionalAttributes>;
 
 export class deliverables extends Model<deliverablesAttributes, deliverablesCreationAttributes> implements deliverablesAttributes {
@@ -89,80 +80,80 @@ export class deliverables extends Model<deliverablesAttributes, deliverablesCrea
 
   static initModel(sequelize: Sequelize.Sequelize): typeof deliverables {
     return sequelize.define('deliverables', {
-      id: {
-        autoIncrement: true,
-        type: DataTypes.INTEGER,
-        allowNull: false,
-        primaryKey: true
-      },
-      deliverableUrl: {
-        type: DataTypes.STRING(255),
-        allowNull: false
-      },
-      ipfsLink: {
-        type: DataTypes.STRING(255),
-        allowNull: false
-      },
-      title: {
-        type: DataTypes.TEXT,
-        allowNull: false
-      },
-      description: {
-        type: DataTypes.TEXT,
-        allowNull: false
-      },
-      canceled: {
-        type: DataTypes.BOOLEAN,
-        allowNull: true,
-        defaultValue: false
-      },
-      markedReadyForReview: {
-        type: DataTypes.BOOLEAN,
-        allowNull: true,
-        defaultValue: false
-      },
-      accepted: {
-        type: DataTypes.BOOLEAN,
-        allowNull: true,
-        defaultValue: false
-      },
-      issueId: {
-        type: DataTypes.INTEGER,
-        allowNull: true,
-        references: {
-          model: 'issues',
-          key: 'id'
-        }
-      },
-      bountyId: {
-        type: DataTypes.INTEGER,
-        allowNull: true
-      },
-      prContractId: {
-        type: DataTypes.INTEGER,
-        allowNull: true
-      },
-      userId: {
-        type: DataTypes.INTEGER,
-        allowNull: false,
-        references: {
-          model: 'users',
-          key: 'id'
-        }
+    id: {
+      autoIncrement: true,
+      type: DataTypes.INTEGER,
+      allowNull: false,
+      primaryKey: true
+    },
+    deliverableUrl: {
+      type: DataTypes.STRING(255),
+      allowNull: false
+    },
+    ipfsLink: {
+      type: DataTypes.STRING(255),
+      allowNull: false
+    },
+    title: {
+      type: DataTypes.TEXT,
+      allowNull: false
+    },
+    description: {
+      type: DataTypes.TEXT,
+      allowNull: false
+    },
+    canceled: {
+      type: DataTypes.BOOLEAN,
+      allowNull: true,
+      defaultValue: false
+    },
+    markedReadyForReview: {
+      type: DataTypes.BOOLEAN,
+      allowNull: true,
+      defaultValue: false
+    },
+    accepted: {
+      type: DataTypes.BOOLEAN,
+      allowNull: true,
+      defaultValue: false
+    },
+    issueId: {
+      type: DataTypes.INTEGER,
+      allowNull: true,
+      references: {
+        model: 'issues',
+        key: 'id'
       }
-    }, {
-      tableName: 'deliverables',
-      schema: 'public',
-      timestamps: true,
-      indexes: [
-        {
-          name: "deliverables_pkey",
-          unique: true,
-          fields: [
-            {name: "id"},
-          ]
-        },
-      ]
-    }) as typeof deliverables;
+    },
+    bountyId: {
+      type: DataTypes.INTEGER,
+      allowNull: true
+    },
+    prContractId: {
+      type: DataTypes.INTEGER,
+      allowNull: true
+    },
+    userId: {
+      type: DataTypes.INTEGER,
+      allowNull: false,
+      references: {
+        model: 'users',
+        key: 'id'
+      }
+    }
+  }, {
+    tableName: 'deliverables',
+    schema: 'public',
+    timestamps: true,
+    indexes: [
+      {
+        name: "deliverables_pkey",
+        unique: true,
+        fields: [
+          { name: "id" },
+        ]
+      },
+    ]
+  }) as typeof deliverables;
   }
 }

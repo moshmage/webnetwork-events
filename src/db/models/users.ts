@@ -1,13 +1,13 @@
 import * as Sequelize from 'sequelize';
-import {DataTypes, Model, Optional} from 'sequelize';
-import type {comments, commentsId} from './comments';
-import type {curators, curatorsId} from './curators';
-import type {deliverables, deliverablesId} from './deliverables';
-import type {issues, issuesId} from './issues';
-import type {kyc_sessions, kyc_sessionsId} from './kyc_sessions';
-import type {notifications, notificationsId} from './notifications';
-import type {user_settings, user_settingsId} from './user_settings';
-import type {users_locked_registry, users_locked_registryId} from './users_locked_registry';
+import { DataTypes, Model, Optional } from 'sequelize';
+import type { comments, commentsId } from './comments';
+import type { curators, curatorsId } from './curators';
+import type { deliverables, deliverablesId } from './deliverables';
+import type { issues, issuesId } from './issues';
+import type { kyc_sessions, kyc_sessionsId } from './kyc_sessions';
+import type { notifications, notificationsId } from './notifications';
+import type { user_settings, user_settingsId } from './user_settings';
+import type { users_locked_registry, users_locked_registryId } from './users_locked_registry';
 
 export interface usersAttributes {
   id: number;
@@ -24,17 +24,7 @@ export interface usersAttributes {
 
 export type usersPk = "id";
 export type usersId = users[usersPk];
-export type usersOptionalAttributes =
-  "id"
-  | "address"
-  | "createdAt"
-  | "updatedAt"
-  | "handle"
-  | "resetedAt"
-  | "email"
-  | "isEmailConfirmed"
-  | "emailVerificationCode"
-  | "emailVerificationSentAt";
+export type usersOptionalAttributes = "id" | "address" | "createdAt" | "updatedAt" | "handle" | "resetedAt" | "email" | "isEmailConfirmed" | "emailVerificationCode" | "emailVerificationSentAt";
 export type usersCreationAttributes = Optional<usersAttributes, usersOptionalAttributes>;
 
 export class users extends Model<usersAttributes, usersCreationAttributes> implements usersAttributes {
@@ -148,78 +138,78 @@ export class users extends Model<usersAttributes, usersCreationAttributes> imple
 
   static initModel(sequelize: Sequelize.Sequelize): typeof users {
     return sequelize.define('users', {
-      id: {
-        autoIncrement: true,
-        type: DataTypes.INTEGER,
-        allowNull: false,
-        primaryKey: true
+    id: {
+      autoIncrement: true,
+      type: DataTypes.INTEGER,
+      allowNull: false,
+      primaryKey: true
+    },
+    address: {
+      type: DataTypes.STRING(255),
+      allowNull: true,
+      unique: "users_address_key"
+    },
+    handle: {
+      type: DataTypes.STRING(255),
+      allowNull: true,
+      unique: "users_githubLogin_key"
+    },
+    resetedAt: {
+      type: DataTypes.DATE,
+      allowNull: true
+    },
+    email: {
+      type: DataTypes.STRING(255),
+      allowNull: true,
+      unique: "users_email_key"
+    },
+    isEmailConfirmed: {
+      type: DataTypes.BOOLEAN,
+      allowNull: true,
+      defaultValue: false
+    },
+    emailVerificationCode: {
+      type: DataTypes.STRING(255),
+      allowNull: true
+    },
+    emailVerificationSentAt: {
+      type: DataTypes.DATE,
+      allowNull: true
+    }
+  }, {
+    tableName: 'users',
+    schema: 'public',
+    timestamps: true,
+    indexes: [
+      {
+        name: "users_address_key",
+        unique: true,
+        fields: [
+          { name: "address" },
+        ]
       },
-      address: {
-        type: DataTypes.STRING(255),
-        allowNull: true,
-        unique: "users_address_key"
+      {
+        name: "users_email_key",
+        unique: true,
+        fields: [
+          { name: "email" },
+        ]
       },
-      handle: {
-        type: DataTypes.STRING(255),
-        allowNull: true,
-        unique: "users_handle_key"
+      {
+        name: "users_githubLogin_key",
+        unique: true,
+        fields: [
+          { name: "handle" },
+        ]
       },
-      resetedAt: {
-        type: DataTypes.DATE,
-        allowNull: true
+      {
+        name: "users_pkey",
+        unique: true,
+        fields: [
+          { name: "id" },
+        ]
       },
-      email: {
-        type: DataTypes.STRING(255),
-        allowNull: true,
-        unique: "users_email_key"
-      },
-      isEmailConfirmed: {
-        type: DataTypes.BOOLEAN,
-        allowNull: true,
-        defaultValue: false
-      },
-      emailVerificationCode: {
-        type: DataTypes.STRING(255),
-        allowNull: true
-      },
-      emailVerificationSentAt: {
-        type: DataTypes.DATE,
-        allowNull: true
-      }
-    }, {
-      tableName: 'users',
-      schema: 'public',
-      timestamps: true,
-      indexes: [
-        {
-          name: "users_address_key",
-          unique: true,
-          fields: [
-            {name: "address"},
-          ]
-        },
-        {
-          name: "users_email_key",
-          unique: true,
-          fields: [
-            {name: "email"},
-          ]
-        },
-        {
-          name: "users_handle_key",
-          unique: true,
-          fields: [
-            {name: "handle"},
-          ]
-        },
-        {
-          name: "users_pkey",
-          unique: true,
-          fields: [
-            {name: "id"},
-          ]
-        },
-      ]
-    }) as typeof users;
+    ]
+  }) as typeof users;
   }
 }

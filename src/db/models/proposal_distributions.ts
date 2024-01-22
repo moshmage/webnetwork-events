@@ -1,6 +1,6 @@
 import * as Sequelize from 'sequelize';
-import {DataTypes, Model, Optional} from 'sequelize';
-import type {merge_proposals, merge_proposalsId} from './merge_proposals';
+import { DataTypes, Model, Optional } from 'sequelize';
+import type { merge_proposals, merge_proposalsId } from './merge_proposals';
 
 export interface proposal_distributionsAttributes {
   id: number;
@@ -32,41 +32,41 @@ export class proposal_distributions extends Model<proposal_distributionsAttribut
 
   static initModel(sequelize: Sequelize.Sequelize): typeof proposal_distributions {
     return sequelize.define('proposal_distributions', {
-      id: {
-        autoIncrement: true,
-        type: DataTypes.INTEGER,
-        allowNull: false,
-        primaryKey: true
-      },
-      recipient: {
-        type: DataTypes.STRING(255),
-        allowNull: false
-      },
-      percentage: {
-        type: DataTypes.INTEGER,
-        allowNull: false
-      },
-      proposalId: {
-        type: DataTypes.INTEGER,
-        allowNull: false,
-        references: {
-          model: 'merge_proposals',
-          key: 'id'
-        }
+    id: {
+      autoIncrement: true,
+      type: DataTypes.INTEGER,
+      allowNull: false,
+      primaryKey: true
+    },
+    recipient: {
+      type: DataTypes.STRING(255),
+      allowNull: false
+    },
+    percentage: {
+      type: DataTypes.INTEGER,
+      allowNull: false
+    },
+    proposalId: {
+      type: DataTypes.INTEGER,
+      allowNull: false,
+      references: {
+        model: 'merge_proposals',
+        key: 'id'
       }
-    }, {
-      tableName: 'proposal_distributions',
-      schema: 'public',
-      timestamps: true,
-      indexes: [
-        {
-          name: "proposal_distributions_pkey",
-          unique: true,
-          fields: [
-            {name: "id"},
-          ]
-        },
-      ]
-    }) as typeof proposal_distributions;
+    }
+  }, {
+    tableName: 'proposal_distributions',
+    schema: 'public',
+    timestamps: true,
+    indexes: [
+      {
+        name: "proposal_distributions_pkey",
+        unique: true,
+        fields: [
+          { name: "id" },
+        ]
+      },
+    ]
+  }) as typeof proposal_distributions;
   }
 }

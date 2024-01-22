@@ -1,9 +1,9 @@
 import * as Sequelize from 'sequelize';
-import {DataTypes, Model, Optional} from 'sequelize';
-import type {deliverables, deliverablesId} from './deliverables';
-import type {issues, issuesId} from './issues';
-import type {merge_proposals, merge_proposalsId} from './merge_proposals';
-import type {users, usersId} from './users';
+import { DataTypes, Model, Optional } from 'sequelize';
+import type { deliverables, deliverablesId } from './deliverables';
+import type { issues, issuesId } from './issues';
+import type { merge_proposals, merge_proposalsId } from './merge_proposals';
+import type { users, usersId } from './users';
 
 export interface commentsAttributes {
   id: number;
@@ -22,14 +22,7 @@ export interface commentsAttributes {
 
 export type commentsPk = "id";
 export type commentsId = comments[commentsPk];
-export type commentsOptionalAttributes =
-  "id"
-  | "hidden"
-  | "proposalId"
-  | "replyId"
-  | "createdAt"
-  | "updatedAt"
-  | "deliverableId";
+export type commentsOptionalAttributes = "id" | "hidden" | "proposalId" | "replyId" | "createdAt" | "updatedAt" | "deliverableId";
 export type commentsCreationAttributes = Optional<commentsAttributes, commentsOptionalAttributes>;
 
 export class comments extends Model<commentsAttributes, commentsCreationAttributes> implements commentsAttributes {
@@ -74,82 +67,82 @@ export class comments extends Model<commentsAttributes, commentsCreationAttribut
 
   static initModel(sequelize: Sequelize.Sequelize): typeof comments {
     return sequelize.define('comments', {
-      id: {
-        autoIncrement: true,
-        type: DataTypes.INTEGER,
-        allowNull: false,
-        primaryKey: true
-      },
-      comment: {
-        type: DataTypes.TEXT,
-        allowNull: false
-      },
-      hidden: {
-        type: DataTypes.BOOLEAN,
-        allowNull: true,
-        defaultValue: false
-      },
-      type: {
-        type: DataTypes.STRING(255),
-        allowNull: false
-      },
-      issueId: {
-        type: DataTypes.INTEGER,
-        allowNull: false,
-        references: {
-          model: 'issues',
-          key: 'id'
-        }
-      },
-      proposalId: {
-        type: DataTypes.INTEGER,
-        allowNull: true,
-        references: {
-          model: 'merge_proposals',
-          key: 'id'
-        }
-      },
-      userId: {
-        type: DataTypes.INTEGER,
-        allowNull: false,
-        references: {
-          model: 'users',
-          key: 'id'
-        }
-      },
-      userAddress: {
-        type: DataTypes.STRING(255),
-        allowNull: false
-      },
-      replyId: {
-        type: DataTypes.INTEGER,
-        allowNull: true,
-        references: {
-          model: 'comments',
-          key: 'id'
-        }
-      },
-      deliverableId: {
-        type: DataTypes.INTEGER,
-        allowNull: true,
-        references: {
-          model: 'deliverables',
-          key: 'id'
-        }
+    id: {
+      autoIncrement: true,
+      type: DataTypes.INTEGER,
+      allowNull: false,
+      primaryKey: true
+    },
+    comment: {
+      type: DataTypes.TEXT,
+      allowNull: false
+    },
+    hidden: {
+      type: DataTypes.BOOLEAN,
+      allowNull: true,
+      defaultValue: false
+    },
+    type: {
+      type: DataTypes.STRING(255),
+      allowNull: false
+    },
+    issueId: {
+      type: DataTypes.INTEGER,
+      allowNull: false,
+      references: {
+        model: 'issues',
+        key: 'id'
       }
-    }, {
-      tableName: 'comments',
-      schema: 'public',
-      timestamps: true,
-      indexes: [
-        {
-          name: "comments_pkey",
-          unique: true,
-          fields: [
-            {name: "id"},
-          ]
-        },
-      ]
-    }) as typeof comments;
+    },
+    proposalId: {
+      type: DataTypes.INTEGER,
+      allowNull: true,
+      references: {
+        model: 'merge_proposals',
+        key: 'id'
+      }
+    },
+    userId: {
+      type: DataTypes.INTEGER,
+      allowNull: false,
+      references: {
+        model: 'users',
+        key: 'id'
+      }
+    },
+    userAddress: {
+      type: DataTypes.STRING(255),
+      allowNull: false
+    },
+    replyId: {
+      type: DataTypes.INTEGER,
+      allowNull: true,
+      references: {
+        model: 'comments',
+        key: 'id'
+      }
+    },
+    deliverableId: {
+      type: DataTypes.INTEGER,
+      allowNull: true,
+      references: {
+        model: 'deliverables',
+        key: 'id'
+      }
+    }
+  }, {
+    tableName: 'comments',
+    schema: 'public',
+    timestamps: true,
+    indexes: [
+      {
+        name: "comments_pkey",
+        unique: true,
+        fields: [
+          { name: "id" },
+        ]
+      },
+    ]
+  }) as typeof comments;
   }
 }

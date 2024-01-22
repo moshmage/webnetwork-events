@@ -1,8 +1,8 @@
 import * as Sequelize from 'sequelize';
-import {DataTypes, Model, Optional} from 'sequelize';
-import type {chains, chainsId} from './chains';
-import type {tokens, tokensId} from './tokens';
-import type {users, usersId} from './users';
+import { DataTypes, Model, Optional } from 'sequelize';
+import type { chains, chainsId } from './chains';
+import type { tokens, tokensId } from './tokens';
+import type { users, usersId } from './users';
 
 export interface users_locked_registryAttributes {
   id: number;
@@ -48,57 +48,57 @@ export class users_locked_registry extends Model<users_locked_registryAttributes
 
   static initModel(sequelize: Sequelize.Sequelize): typeof users_locked_registry {
     return sequelize.define('users_locked_registry', {
-      id: {
-        autoIncrement: true,
-        type: DataTypes.INTEGER,
-        allowNull: false,
-        primaryKey: true
-      },
-      address: {
-        type: DataTypes.STRING(255),
-        allowNull: false
-      },
-      userId: {
-        type: DataTypes.INTEGER,
-        allowNull: true,
-        references: {
-          model: 'users',
-          key: 'id'
-        }
-      },
-      amountLocked: {
-        type: DataTypes.STRING(255),
-        allowNull: false
-      },
-      chainId: {
-        type: DataTypes.INTEGER,
-        allowNull: false,
-        references: {
-          model: 'chains',
-          key: 'chainId'
-        }
-      },
-      tokenId: {
-        type: DataTypes.INTEGER,
-        allowNull: false,
-        references: {
-          model: 'tokens',
-          key: 'id'
-        }
+    id: {
+      autoIncrement: true,
+      type: DataTypes.INTEGER,
+      allowNull: false,
+      primaryKey: true
+    },
+    address: {
+      type: DataTypes.STRING(255),
+      allowNull: false
+    },
+    userId: {
+      type: DataTypes.INTEGER,
+      allowNull: true,
+      references: {
+        model: 'users',
+        key: 'id'
       }
-    }, {
-      tableName: 'users_locked_registry',
-      schema: 'public',
-      timestamps: true,
-      indexes: [
-        {
-          name: "users_locked_registry_pkey",
-          unique: true,
-          fields: [
-            {name: "id"},
-          ]
-        },
-      ]
-    }) as typeof users_locked_registry;
+    },
+    amountLocked: {
+      type: DataTypes.STRING(255),
+      allowNull: false
+    },
+    chainId: {
+      type: DataTypes.INTEGER,
+      allowNull: false,
+      references: {
+        model: 'chains',
+        key: 'chainId'
+      }
+    },
+    tokenId: {
+      type: DataTypes.INTEGER,
+      allowNull: false,
+      references: {
+        model: 'tokens',
+        key: 'id'
+      }
+    }
+  }, {
+    tableName: 'users_locked_registry',
+    schema: 'public',
+    timestamps: true,
+    indexes: [
+      {
+        name: "users_locked_registry_pkey",
+        unique: true,
+        fields: [
+          { name: "id" },
+        ]
+      },
+    ]
+  }) as typeof users_locked_registry;
   }
 }

@@ -1,12 +1,12 @@
 import * as Sequelize from 'sequelize';
-import {DataTypes, Model, Optional} from 'sequelize';
-import type {chains, chainsId} from './chains';
-import type {curators, curatorsId} from './curators';
-import type {delegations, delegationsId} from './delegations';
-import type {issues, issuesId} from './issues';
-import type {merge_proposals, merge_proposalsId} from './merge_proposals';
-import type {network_tokens, network_tokensId} from './network_tokens';
-import type {tokens, tokensId} from './tokens';
+import { DataTypes, Model, Optional } from 'sequelize';
+import type { chains, chainsId } from './chains';
+import type { curators, curatorsId } from './curators';
+import type { delegations, delegationsId } from './delegations';
+import type { issues, issuesId } from './issues';
+import type { merge_proposals, merge_proposalsId } from './merge_proposals';
+import type { network_tokens, network_tokensId } from './network_tokens';
+import type { tokens, tokensId } from './tokens';
 
 export interface networksAttributes {
   id: number;
@@ -36,37 +36,12 @@ export interface networksAttributes {
   proposerFeeShare?: number;
   banned_domains?: string[];
   allow_list?: string[];
+  close_task_allow_list?: string[];
 }
 
 export type networksPk = "id";
 export type networksId = networks[networksPk];
-export type networksOptionalAttributes =
-  "id"
-  | "name"
-  | "description"
-  | "colors"
-  | "networkAddress"
-  | "logoIcon"
-  | "fullLogo"
-  | "createdAt"
-  | "updatedAt"
-  | "isClosed"
-  | "allowCustomTokens"
-  | "councilMembers"
-  | "isRegistered"
-  | "isDefault"
-  | "chain_id"
-  | "network_token_id"
-  | "councilAmount"
-  | "disputableTime"
-  | "draftTime"
-  | "oracleExchangeRate"
-  | "mergeCreatorFeeShare"
-  | "percentageNeededForDispute"
-  | "cancelableTime"
-  | "proposerFeeShare"
-  | "banned_domains"
-  | "allow_list";
+export type networksOptionalAttributes = "id" | "name" | "description" | "colors" | "networkAddress" | "logoIcon" | "fullLogo" | "createdAt" | "updatedAt" | "isClosed" | "allowCustomTokens" | "councilMembers" | "isRegistered" | "isDefault" | "chain_id" | "network_token_id" | "councilAmount" | "disputableTime" | "draftTime" | "oracleExchangeRate" | "mergeCreatorFeeShare" | "percentageNeededForDispute" | "cancelableTime" | "proposerFeeShare" | "banned_domains" | "allow_list" | "close_task_allow_list";
 export type networksCreationAttributes = Optional<networksAttributes, networksOptionalAttributes>;
 
 export class networks extends Model<networksAttributes, networksCreationAttributes> implements networksAttributes {
@@ -97,6 +72,7 @@ export class networks extends Model<networksAttributes, networksCreationAttribut
   proposerFeeShare?: number;
   banned_domains?: string[];
   allow_list?: string[];
+  close_task_allow_list?: string[];
 
   // networks belongsTo chains via chain_id
   chain!: chains;
@@ -171,145 +147,150 @@ export class networks extends Model<networksAttributes, networksCreationAttribut
 
   static initModel(sequelize: Sequelize.Sequelize): typeof networks {
     return sequelize.define('networks', {
-      id: {
-        autoIncrement: true,
-        type: DataTypes.INTEGER,
-        allowNull: false,
-        primaryKey: true
+    id: {
+      autoIncrement: true,
+      type: DataTypes.INTEGER,
+      allowNull: false,
+      primaryKey: true
+    },
+    creatorAddress: {
+      type: DataTypes.STRING(255),
+      allowNull: false
+    },
+    name: {
+      type: DataTypes.STRING(255),
+      allowNull: true,
+      unique: "network_chain_unique"
+    },
+    description: {
+      type: DataTypes.TEXT,
+      allowNull: true
+    },
+    colors: {
+      type: DataTypes.JSON,
+      allowNull: true
+    },
+    networkAddress: {
+      type: DataTypes.STRING(255),
+      allowNull: true
+    },
+    logoIcon: {
+      type: DataTypes.STRING(255),
+      allowNull: true
+    },
+    fullLogo: {
+      type: DataTypes.STRING(255),
+      allowNull: true
+    },
+    isClosed: {
+      type: DataTypes.BOOLEAN,
+      allowNull: true,
+      defaultValue: false
+    },
+    allowCustomTokens: {
+      type: DataTypes.BOOLEAN,
+      allowNull: true,
+      defaultValue: false
+    },
+    councilMembers: {
+      type: DataTypes.ARRAY(DataTypes.STRING),
+      allowNull: true
+    },
+    isRegistered: {
+      type: DataTypes.BOOLEAN,
+      allowNull: true,
+      defaultValue: false
+    },
+    isDefault: {
+      type: DataTypes.BOOLEAN,
+      allowNull: true,
+      defaultValue: false
+    },
+    chain_id: {
+      type: DataTypes.INTEGER,
+      allowNull: true,
+      references: {
+        model: 'chains',
+        key: 'chainId'
       },
-      creatorAddress: {
-        type: DataTypes.STRING(255),
-        allowNull: false
-      },
-      name: {
-        type: DataTypes.STRING(255),
-        allowNull: true,
-        unique: "network_chain_unique"
-      },
-      description: {
-        type: DataTypes.TEXT,
-        allowNull: true
-      },
-      colors: {
-        type: DataTypes.JSON,
-        allowNull: true
-      },
-      networkAddress: {
-        type: DataTypes.STRING(255),
-        allowNull: true
-      },
-      logoIcon: {
-        type: DataTypes.STRING(255),
-        allowNull: true
-      },
-      fullLogo: {
-        type: DataTypes.STRING(255),
-        allowNull: true
-      },
-      isClosed: {
-        type: DataTypes.BOOLEAN,
-        allowNull: true,
-        defaultValue: false
-      },
-      allowCustomTokens: {
-        type: DataTypes.BOOLEAN,
-        allowNull: true,
-        defaultValue: false
-      },
-      councilMembers: {
-        type: DataTypes.ARRAY(DataTypes.STRING),
-        allowNull: true
-      },
-      isRegistered: {
-        type: DataTypes.BOOLEAN,
-        allowNull: true,
-        defaultValue: false
-      },
-      isDefault: {
-        type: DataTypes.BOOLEAN,
-        allowNull: true,
-        defaultValue: false
-      },
-      chain_id: {
-        type: DataTypes.INTEGER,
-        allowNull: true,
-        references: {
-          model: 'chains',
-          key: 'chainId'
-        },
-        unique: "network_chain_unique"
-      },
-      network_token_id: {
-        type: DataTypes.INTEGER,
-        allowNull: true,
-        references: {
-          model: 'tokens',
-          key: 'id'
-        }
-      },
-      councilAmount: {
-        type: DataTypes.STRING(255),
-        allowNull: true
-      },
-      disputableTime: {
-        type: DataTypes.BIGINT,
-        allowNull: true
-      },
-      draftTime: {
-        type: DataTypes.BIGINT,
-        allowNull: true
-      },
-      oracleExchangeRate: {
-        type: DataTypes.DOUBLE,
-        allowNull: true
-      },
-      mergeCreatorFeeShare: {
-        type: DataTypes.DOUBLE,
-        allowNull: true
-      },
-      percentageNeededForDispute: {
-        type: DataTypes.DOUBLE,
-        allowNull: true
-      },
-      cancelableTime: {
-        type: DataTypes.BIGINT,
-        allowNull: true
-      },
-      proposerFeeShare: {
-        type: DataTypes.DOUBLE,
-        allowNull: true
-      },
-      banned_domains: {
-        type: DataTypes.ARRAY(DataTypes.STRING),
-        allowNull: true,
-        defaultValue: ["(ARRAY[]"]
-      },
-      allow_list: {
-        type: DataTypes.ARRAY(DataTypes.STRING),
-        allowNull: true,
-        defaultValue: ["(ARRAY[]"]
+      unique: "network_chain_unique"
+    },
+    network_token_id: {
+      type: DataTypes.INTEGER,
+      allowNull: true,
+      references: {
+        model: 'tokens',
+        key: 'id'
       }
-    }, {
-      tableName: 'networks',
-      schema: 'public',
-      timestamps: true,
-      indexes: [
-        {
-          name: "network_chain_unique",
-          unique: true,
-          fields: [
-            {name: "name"},
-            {name: "chain_id"},
-          ]
-        },
-        {
-          name: "networks_pkey",
-          unique: true,
-          fields: [
-            {name: "id"},
-          ]
-        },
-      ]
-    }) as typeof networks;
+    },
+    councilAmount: {
+      type: DataTypes.STRING(255),
+      allowNull: true
+    },
+    disputableTime: {
+      type: DataTypes.BIGINT,
+      allowNull: true
+    },
+    draftTime: {
+      type: DataTypes.BIGINT,
+      allowNull: true
+    },
+    oracleExchangeRate: {
+      type: DataTypes.DOUBLE,
+      allowNull: true
+    },
+    mergeCreatorFeeShare: {
+      type: DataTypes.DOUBLE,
+      allowNull: true
+    },
+    percentageNeededForDispute: {
+      type: DataTypes.DOUBLE,
+      allowNull: true
+    },
+    cancelableTime: {
+      type: DataTypes.BIGINT,
+      allowNull: true
+    },
+    proposerFeeShare: {
+      type: DataTypes.DOUBLE,
+      allowNull: true
+    },
+    banned_domains: {
+      type: DataTypes.ARRAY(DataTypes.STRING),
+      allowNull: true,
+      defaultValue: ["(ARRAY[]"]
+    },
+    allow_list: {
+      type: DataTypes.ARRAY(DataTypes.STRING),
+      allowNull: true,
+      defaultValue: ["(ARRAY[]"]
+    },
+    close_task_allow_list: {
+      type: DataTypes.ARRAY(DataTypes.STRING),
+      allowNull: true,
+      defaultValue: ["(ARRAY[]"]
+    }
+  }, {
+    tableName: 'networks',
+    schema: 'public',
+    timestamps: true,
+    indexes: [
+      {
+        name: "network_chain_unique",
+        unique: true,
+        fields: [
+          { name: "name" },
+          { name: "chain_id" },
+        ]
+      },
+      {
+        name: "networks_pkey",
+        unique: true,
+        fields: [
+          { name: "id" },
+        ]
+      },
+    ]
+  }) as typeof networks;
   }
 }
