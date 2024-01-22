@@ -4,7 +4,7 @@ import type { delegations, delegationsId } from './delegations';
 import type { issues, issuesId } from './issues';
 import type { networks, networksId } from './networks';
 import type { tokens, tokensId } from './tokens';
-import type {users_locked_registry, users_locked_registryId} from './users_locked_registry';
+import type { users_locked_registry, users_locked_registryId } from './users_locked_registry';
 
 export interface chainsAttributes {
   id: number;
@@ -31,21 +31,7 @@ export interface chainsAttributes {
 
 export type chainsPk = "id";
 export type chainsId = chains[chainsPk];
-export type chainsOptionalAttributes =
-  "id"
-  | "chainId"
-  | "registryAddress"
-  | "eventsApi"
-  | "blockScanner"
-  | "isDefault"
-  | "color"
-  | "createdAt"
-  | "updatedAt"
-  | "icon"
-  | "lockAmountForNetworkCreation"
-  | "networkCreationFeePercentage"
-  | "closeFeePercentage"
-  | "cancelFeePercentage";
+export type chainsOptionalAttributes = "id" | "chainId" | "registryAddress" | "eventsApi" | "blockScanner" | "isDefault" | "color" | "createdAt" | "updatedAt" | "icon" | "lockAmountForNetworkCreation" | "networkCreationFeePercentage" | "closeFeePercentage" | "cancelFeePercentage";
 export type chainsCreationAttributes = Optional<chainsAttributes, chainsOptionalAttributes>;
 
 export class chains extends Model<chainsAttributes, chainsCreationAttributes> implements chainsAttributes {
@@ -133,109 +119,109 @@ export class chains extends Model<chainsAttributes, chainsCreationAttributes> im
 
   static initModel(sequelize: Sequelize.Sequelize): typeof chains {
     return sequelize.define('chains', {
-      id: {
-        autoIncrement: true,
-        type: DataTypes.INTEGER,
-        allowNull: false,
-        primaryKey: true
+    id: {
+      autoIncrement: true,
+      type: DataTypes.INTEGER,
+      allowNull: false,
+      primaryKey: true
+    },
+    chainId: {
+      type: DataTypes.INTEGER,
+      allowNull: true,
+      unique: "chains_chainId_key"
+    },
+    chainRpc: {
+      type: DataTypes.STRING(255),
+      allowNull: false
+    },
+    chainName: {
+      type: DataTypes.STRING(255),
+      allowNull: false,
+      unique: "chains_chainName_key"
+    },
+    chainShortName: {
+      type: DataTypes.STRING(255),
+      allowNull: false
+    },
+    chainCurrencyName: {
+      type: DataTypes.STRING(255),
+      allowNull: false
+    },
+    chainCurrencySymbol: {
+      type: DataTypes.STRING(255),
+      allowNull: false
+    },
+    chainCurrencyDecimals: {
+      type: DataTypes.INTEGER,
+      allowNull: false
+    },
+    registryAddress: {
+      type: DataTypes.STRING(255),
+      allowNull: true
+    },
+    eventsApi: {
+      type: DataTypes.STRING(255),
+      allowNull: true
+    },
+    blockScanner: {
+      type: DataTypes.STRING(255),
+      allowNull: true
+    },
+    isDefault: {
+      type: DataTypes.BOOLEAN,
+      allowNull: true
+    },
+    color: {
+      type: DataTypes.STRING(255),
+      allowNull: true
+    },
+    icon: {
+      type: DataTypes.STRING(255),
+      allowNull: true
+    },
+    lockAmountForNetworkCreation: {
+      type: DataTypes.STRING(255),
+      allowNull: true
+    },
+    networkCreationFeePercentage: {
+      type: DataTypes.DOUBLE,
+      allowNull: true
+    },
+    closeFeePercentage: {
+      type: DataTypes.DOUBLE,
+      allowNull: true
+    },
+    cancelFeePercentage: {
+      type: DataTypes.DOUBLE,
+      allowNull: true
+    }
+  }, {
+    tableName: 'chains',
+    schema: 'public',
+    timestamps: true,
+    indexes: [
+      {
+        name: "chains_chainId_key",
+        unique: true,
+        fields: [
+          { name: "chainId" },
+        ]
       },
-      chainId: {
-        type: DataTypes.INTEGER,
-        allowNull: true,
-        unique: "chains_chainId_key"
+      {
+        name: "chains_chainName_key",
+        unique: true,
+        fields: [
+          { name: "chainName" },
+        ]
       },
-      chainRpc: {
-        type: DataTypes.STRING(255),
-        allowNull: false
+      {
+        name: "chains_pkey",
+        unique: true,
+        fields: [
+          { name: "id" },
+        ]
       },
-      chainName: {
-        type: DataTypes.STRING(255),
-        allowNull: false,
-        unique: "chains_chainName_key"
-      },
-      chainShortName: {
-        type: DataTypes.STRING(255),
-        allowNull: false
-      },
-      chainCurrencyName: {
-        type: DataTypes.STRING(255),
-        allowNull: false
-      },
-      chainCurrencySymbol: {
-        type: DataTypes.STRING(255),
-        allowNull: false
-      },
-      chainCurrencyDecimals: {
-        type: DataTypes.INTEGER,
-        allowNull: false
-      },
-      registryAddress: {
-        type: DataTypes.STRING(255),
-        allowNull: true
-      },
-      eventsApi: {
-        type: DataTypes.STRING(255),
-        allowNull: true
-      },
-      blockScanner: {
-        type: DataTypes.STRING(255),
-        allowNull: true
-      },
-      isDefault: {
-        type: DataTypes.BOOLEAN,
-        allowNull: true
-      },
-      color: {
-        type: DataTypes.STRING(255),
-        allowNull: true
-      },
-      icon: {
-        type: DataTypes.STRING(255),
-        allowNull: true
-      },
-      lockAmountForNetworkCreation: {
-        type: DataTypes.STRING(255),
-        allowNull: true
-      },
-      networkCreationFeePercentage: {
-        type: DataTypes.DOUBLE,
-        allowNull: true
-      },
-      closeFeePercentage: {
-        type: DataTypes.DOUBLE,
-        allowNull: true
-      },
-      cancelFeePercentage: {
-        type: DataTypes.DOUBLE,
-        allowNull: true
-      }
-    }, {
-      tableName: 'chains',
-      schema: 'public',
-      timestamps: true,
-      indexes: [
-        {
-          name: "chains_chainId_key",
-          unique: true,
-          fields: [
-            {name: "chainId"},
-          ]
-        },
-        {
-          name: "chains_chainName_key",
-          unique: true,
-          fields: [
-            {name: "chainName"},
-          ]
-        },
-        {
-          name: "chains_pkey",
-          unique: true,
-          fields: [
-            {name: "id"},
-          ]
-        },
-      ]
-    }) as typeof chains;
+    ]
+  }) as typeof chains;
   }
 }

@@ -1,5 +1,5 @@
 import * as Sequelize from 'sequelize';
-import {DataTypes, Model, Optional} from 'sequelize';
+import { DataTypes, Model, Optional } from 'sequelize';
 
 export interface settingsAttributes {
   id: number;
@@ -30,57 +30,57 @@ export class settings extends Model<settingsAttributes, settingsCreationAttribut
 
   static initModel(sequelize: Sequelize.Sequelize): typeof settings {
     return sequelize.define('settings', {
-      id: {
-        autoIncrement: true,
-        type: DataTypes.INTEGER,
-        allowNull: false,
-        primaryKey: true
+    id: {
+      autoIncrement: true,
+      type: DataTypes.INTEGER,
+      allowNull: false,
+      primaryKey: true
+    },
+    key: {
+      type: DataTypes.STRING(255),
+      allowNull: false,
+      unique: "unique_settings_key_value"
+    },
+    value: {
+      type: DataTypes.STRING(255),
+      allowNull: false,
+      unique: "unique_settings_key_value"
+    },
+    type: {
+      type: DataTypes.ENUM("string","boolean","number","json"),
+      allowNull: false,
+      defaultValue: "string"
+    },
+    visibility: {
+      type: DataTypes.ENUM("public","private"),
+      allowNull: false,
+      defaultValue: "public"
+    },
+    group: {
+      type: DataTypes.STRING(255),
+      allowNull: true
+    }
+  }, {
+    tableName: 'settings',
+    schema: 'public',
+    timestamps: true,
+    indexes: [
+      {
+        name: "settings_pkey",
+        unique: true,
+        fields: [
+          { name: "id" },
+        ]
       },
-      key: {
-        type: DataTypes.STRING(255),
-        allowNull: false,
-        unique: "unique_settings_key_value"
+      {
+        name: "unique_settings_key_value",
+        unique: true,
+        fields: [
+          { name: "key" },
+          { name: "value" },
+        ]
       },
-      value: {
-        type: DataTypes.STRING(255),
-        allowNull: false,
-        unique: "unique_settings_key_value"
-      },
-      type: {
-        type: DataTypes.ENUM("string", "boolean", "number", "json"),
-        allowNull: false,
-        defaultValue: "string"
-      },
-      visibility: {
-        type: DataTypes.ENUM("public", "private"),
-        allowNull: false,
-        defaultValue: "public"
-      },
-      group: {
-        type: DataTypes.STRING(255),
-        allowNull: true
-      }
-    }, {
-      tableName: 'settings',
-      schema: 'public',
-      timestamps: true,
-      indexes: [
-        {
-          name: "settings_pkey",
-          unique: true,
-          fields: [
-            {name: "id"},
-          ]
-        },
-        {
-          name: "unique_settings_key_value",
-          unique: true,
-          fields: [
-            {name: "key"},
-            {name: "value"},
-          ]
-        },
-      ]
-    }) as typeof settings;
+    ]
+  }) as typeof settings;
   }
 }

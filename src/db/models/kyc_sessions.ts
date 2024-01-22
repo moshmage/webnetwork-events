@@ -16,14 +16,7 @@ export interface kyc_sessionsAttributes {
 
 export type kyc_sessionsPk = "id";
 export type kyc_sessionsId = kyc_sessions[kyc_sessionsPk];
-export type kyc_sessionsOptionalAttributes =
-  "id"
-  | "status"
-  | "steps"
-  | "tiers"
-  | "validatedAt"
-  | "createdAt"
-  | "updatedAt";
+export type kyc_sessionsOptionalAttributes = "id" | "status" | "steps" | "tiers" | "validatedAt" | "createdAt" | "updatedAt";
 export type kyc_sessionsCreationAttributes = Optional<kyc_sessionsAttributes, kyc_sessionsOptionalAttributes>;
 
 export class kyc_sessions extends Model<kyc_sessionsAttributes, kyc_sessionsCreationAttributes> implements kyc_sessionsAttributes {
@@ -45,53 +38,53 @@ export class kyc_sessions extends Model<kyc_sessionsAttributes, kyc_sessionsCrea
 
   static initModel(sequelize: Sequelize.Sequelize): typeof kyc_sessions {
     return sequelize.define('kyc_sessions', {
-      id: {
-        autoIncrement: true,
-        type: DataTypes.INTEGER,
-        allowNull: false,
-        primaryKey: true
-      },
-      user_id: {
-        type: DataTypes.INTEGER,
-        allowNull: false,
-        references: {
-          model: 'users',
-          key: 'id'
-        }
-      },
-      session_id: {
-        type: DataTypes.STRING(255),
-        allowNull: false
-      },
-      status: {
-        type: DataTypes.STRING(255),
-        allowNull: true
-      },
-      steps: {
-        type: DataTypes.JSON,
-        allowNull: true
-      },
-      tiers: {
-        type: DataTypes.ARRAY(DataTypes.INTEGER),
-        allowNull: true
-      },
-      validatedAt: {
-        type: DataTypes.DATE,
-        allowNull: true
+    id: {
+      autoIncrement: true,
+      type: DataTypes.INTEGER,
+      allowNull: false,
+      primaryKey: true
+    },
+    user_id: {
+      type: DataTypes.INTEGER,
+      allowNull: false,
+      references: {
+        model: 'users',
+        key: 'id'
       }
-    }, {
-      tableName: 'kyc_sessions',
-      schema: 'public',
-      timestamps: true,
-      indexes: [
-        {
-          name: "kyc_sessions_pkey",
-          unique: true,
-          fields: [
-            {name: "id"},
-          ]
-        },
-      ]
-    }) as typeof kyc_sessions;
+    },
+    session_id: {
+      type: DataTypes.STRING(255),
+      allowNull: false
+    },
+    status: {
+      type: DataTypes.STRING(255),
+      allowNull: true
+    },
+    steps: {
+      type: DataTypes.JSON,
+      allowNull: true
+    },
+    tiers: {
+      type: DataTypes.ARRAY(DataTypes.INTEGER),
+      allowNull: true
+    },
+    validatedAt: {
+      type: DataTypes.DATE,
+      allowNull: true
+    }
+  }, {
+    tableName: 'kyc_sessions',
+    schema: 'public',
+    timestamps: true,
+    indexes: [
+      {
+        name: "kyc_sessions_pkey",
+        unique: true,
+        fields: [
+          { name: "id" },
+        ]
+      },
+    ]
+  }) as typeof kyc_sessions;
   }
 }

@@ -36,51 +36,51 @@ export class network_tokens extends Model<network_tokensAttributes, network_toke
 
   static initModel(sequelize: Sequelize.Sequelize): typeof network_tokens {
     return sequelize.define('network_tokens', {
-      id: {
-        autoIncrement: true,
-        type: DataTypes.INTEGER,
-        allowNull: false,
-        primaryKey: true
-      },
-      networkId: {
-        type: DataTypes.INTEGER,
-        allowNull: false,
-        references: {
-          model: 'networks',
-          key: 'id'
-        }
-      },
-      tokenId: {
-        type: DataTypes.INTEGER,
-        allowNull: false,
-        references: {
-          model: 'tokens',
-          key: 'id'
-        }
-      },
-      isTransactional: {
-        type: DataTypes.BOOLEAN,
-        allowNull: false,
-        defaultValue: false
-      },
-      isReward: {
-        type: DataTypes.BOOLEAN,
-        allowNull: false,
-        defaultValue: false
+    id: {
+      autoIncrement: true,
+      type: DataTypes.INTEGER,
+      allowNull: false,
+      primaryKey: true
+    },
+    networkId: {
+      type: DataTypes.INTEGER,
+      allowNull: false,
+      references: {
+        model: 'networks',
+        key: 'id'
       }
-    }, {
-      tableName: 'network_tokens',
-      schema: 'public',
-      timestamps: false,
-      indexes: [
-        {
-          name: "network_tokens_pkey",
-          unique: true,
-          fields: [
-            {name: "id"},
-          ]
-        },
-      ]
-    }) as typeof network_tokens;
+    },
+    tokenId: {
+      type: DataTypes.INTEGER,
+      allowNull: false,
+      references: {
+        model: 'tokens',
+        key: 'id'
+      }
+    },
+    isTransactional: {
+      type: DataTypes.BOOLEAN,
+      allowNull: false,
+      defaultValue: false
+    },
+    isReward: {
+      type: DataTypes.BOOLEAN,
+      allowNull: false,
+      defaultValue: false
+    }
+  }, {
+    tableName: 'network_tokens',
+    schema: 'public',
+    timestamps: false,
+    indexes: [
+      {
+        name: "network_tokens_pkey",
+        unique: true,
+        fields: [
+          { name: "id" },
+        ]
+      },
+    ]
+  }) as typeof network_tokens;
   }
 }

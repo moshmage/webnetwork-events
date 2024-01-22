@@ -1,16 +1,16 @@
 import * as Sequelize from 'sequelize';
-import {DataTypes, Model, Optional} from 'sequelize';
-import type {benefactors, benefactorsId} from './benefactors';
-import type {chains, chainsId} from './chains';
-import type {comments, commentsId} from './comments';
-import type {deliverables, deliverablesId} from './deliverables';
-import type {developers, developersId} from './developers';
-import type {disputes, disputesId} from './disputes';
-import type {merge_proposals, merge_proposalsId} from './merge_proposals';
-import type {networks, networksId} from './networks';
-import type {tokens, tokensId} from './tokens';
-import type {users, usersId} from './users';
-import type {users_payments, users_paymentsId} from './users_payments';
+import { DataTypes, Model, Optional } from 'sequelize';
+import type { benefactors, benefactorsId } from './benefactors';
+import type { chains, chainsId } from './chains';
+import type { comments, commentsId } from './comments';
+import type { deliverables, deliverablesId } from './deliverables';
+import type { developers, developersId } from './developers';
+import type { disputes, disputesId } from './disputes';
+import type { merge_proposals, merge_proposalsId } from './merge_proposals';
+import type { networks, networksId } from './networks';
+import type { tokens, tokensId } from './tokens';
+import type { users, usersId } from './users';
+import type { users_payments, users_paymentsId } from './users_payments';
 
 export interface issuesAttributes {
   id: number;
@@ -46,36 +46,7 @@ export interface issuesAttributes {
 
 export type issuesPk = "id";
 export type issuesId = issues[issuesPk];
-export type issuesOptionalAttributes =
-  "id"
-  | "state"
-  | "createdAt"
-  | "updatedAt"
-  | "amount"
-  | "working"
-  | "merged"
-  | "title"
-  | "body"
-  | "seoImage"
-  | "network_id"
-  | "contractId"
-  | "transactionalTokenId"
-  | "fundingAmount"
-  | "fundedAmount"
-  | "fundedAt"
-  | "isKyc"
-  | "kycTierList"
-  | "chain_id"
-  | "tags"
-  | "rewardAmount"
-  | "rewardTokenId"
-  | "visible"
-  | "contractCreationDate"
-  | "nftImage"
-  | "ipfsUrl"
-  | "type"
-  | "origin"
-  | "userId";
+export type issuesOptionalAttributes = "id" | "state" | "createdAt" | "updatedAt" | "amount" | "working" | "merged" | "title" | "body" | "seoImage" | "network_id" | "contractId" | "transactionalTokenId" | "fundingAmount" | "fundedAmount" | "fundedAt" | "isKyc" | "kycTierList" | "chain_id" | "tags" | "rewardAmount" | "rewardTokenId" | "visible" | "contractCreationDate" | "nftImage" | "ipfsUrl" | "type" | "origin" | "userId";
 export type issuesCreationAttributes = Optional<issuesAttributes, issuesOptionalAttributes>;
 
 export class issues extends Model<issuesAttributes, issuesCreationAttributes> implements issuesAttributes {
@@ -221,154 +192,154 @@ export class issues extends Model<issuesAttributes, issuesCreationAttributes> im
 
   static initModel(sequelize: Sequelize.Sequelize): typeof issues {
     return sequelize.define('issues', {
-      id: {
-        autoIncrement: true,
-        type: DataTypes.INTEGER,
-        allowNull: false,
-        primaryKey: true
-      },
-      state: {
-        type: DataTypes.STRING(255),
-        allowNull: true
-      },
-      amount: {
-        type: DataTypes.STRING(255),
-        allowNull: true
-      },
-      working: {
-        type: DataTypes.ARRAY(DataTypes.STRING),
-        allowNull: true,
-        defaultValue: ["(ARRAY[]"]
-      },
-      merged: {
-        type: DataTypes.STRING(255),
-        allowNull: true
-      },
-      title: {
-        type: DataTypes.TEXT,
-        allowNull: true
-      },
-      body: {
-        type: DataTypes.TEXT,
-        allowNull: true
-      },
-      seoImage: {
-        type: DataTypes.STRING(255),
-        allowNull: true
-      },
-      network_id: {
-        type: DataTypes.INTEGER,
-        allowNull: true,
-        references: {
-          model: 'networks',
-          key: 'id'
-        }
-      },
-      contractId: {
-        type: DataTypes.INTEGER,
-        allowNull: true
-      },
-      transactionalTokenId: {
-        type: DataTypes.INTEGER,
-        allowNull: true,
-        references: {
-          model: 'tokens',
-          key: 'id'
-        }
-      },
-      fundingAmount: {
-        type: DataTypes.STRING(255),
-        allowNull: true,
-        defaultValue: "0"
-      },
-      fundedAmount: {
-        type: DataTypes.STRING(255),
-        allowNull: true,
-        defaultValue: "0"
-      },
-      fundedAt: {
-        type: DataTypes.DATE,
-        allowNull: true
-      },
-      isKyc: {
-        type: DataTypes.BOOLEAN,
-        allowNull: true
-      },
-      kycTierList: {
-        type: DataTypes.ARRAY(DataTypes.INTEGER),
-        allowNull: true
-      },
-      chain_id: {
-        type: DataTypes.INTEGER,
-        allowNull: true,
-        references: {
-          model: 'chains',
-          key: 'chainId'
-        }
-      },
-      tags: {
-        type: DataTypes.ARRAY(DataTypes.STRING),
-        allowNull: true
-      },
-      rewardAmount: {
-        type: DataTypes.STRING(255),
-        allowNull: true,
-        defaultValue: "0"
-      },
-      rewardTokenId: {
-        type: DataTypes.INTEGER,
-        allowNull: true,
-        references: {
-          model: 'tokens',
-          key: 'id'
-        }
-      },
-      visible: {
-        type: DataTypes.BOOLEAN,
-        allowNull: true,
-        defaultValue: true
-      },
-      contractCreationDate: {
-        type: DataTypes.STRING(255),
-        allowNull: true
-      },
-      nftImage: {
-        type: DataTypes.STRING(255),
-        allowNull: true
-      },
-      ipfsUrl: {
-        type: DataTypes.STRING(255),
-        allowNull: true
-      },
-      type: {
-        type: DataTypes.STRING(255),
-        allowNull: true
-      },
-      origin: {
-        type: DataTypes.TEXT,
-        allowNull: true
-      },
-      userId: {
-        type: DataTypes.INTEGER,
-        allowNull: true,
-        references: {
-          model: 'users',
-          key: 'id'
-        }
+    id: {
+      autoIncrement: true,
+      type: DataTypes.INTEGER,
+      allowNull: false,
+      primaryKey: true
+    },
+    state: {
+      type: DataTypes.STRING(255),
+      allowNull: true
+    },
+    amount: {
+      type: DataTypes.STRING(255),
+      allowNull: true
+    },
+    working: {
+      type: DataTypes.ARRAY(DataTypes.STRING),
+      allowNull: true,
+      defaultValue: ["(ARRAY[]"]
+    },
+    merged: {
+      type: DataTypes.STRING(255),
+      allowNull: true
+    },
+    title: {
+      type: DataTypes.TEXT,
+      allowNull: true
+    },
+    body: {
+      type: DataTypes.TEXT,
+      allowNull: true
+    },
+    seoImage: {
+      type: DataTypes.STRING(255),
+      allowNull: true
+    },
+    network_id: {
+      type: DataTypes.INTEGER,
+      allowNull: true,
+      references: {
+        model: 'networks',
+        key: 'id'
       }
-    }, {
-      tableName: 'issues',
-      schema: 'public',
-      timestamps: true,
-      indexes: [
-        {
-          name: "issues_pkey",
-          unique: true,
-          fields: [
-            {name: "id"},
-          ]
-        },
-      ]
-    }) as typeof issues;
+    },
+    contractId: {
+      type: DataTypes.INTEGER,
+      allowNull: true
+    },
+    transactionalTokenId: {
+      type: DataTypes.INTEGER,
+      allowNull: true,
+      references: {
+        model: 'tokens',
+        key: 'id'
+      }
+    },
+    fundingAmount: {
+      type: DataTypes.STRING(255),
+      allowNull: true,
+      defaultValue: "0"
+    },
+    fundedAmount: {
+      type: DataTypes.STRING(255),
+      allowNull: true,
+      defaultValue: "0"
+    },
+    fundedAt: {
+      type: DataTypes.DATE,
+      allowNull: true
+    },
+    isKyc: {
+      type: DataTypes.BOOLEAN,
+      allowNull: true
+    },
+    kycTierList: {
+      type: DataTypes.ARRAY(DataTypes.INTEGER),
+      allowNull: true
+    },
+    chain_id: {
+      type: DataTypes.INTEGER,
+      allowNull: true,
+      references: {
+        model: 'chains',
+        key: 'chainId'
+      }
+    },
+    tags: {
+      type: DataTypes.ARRAY(DataTypes.STRING),
+      allowNull: true
+    },
+    rewardAmount: {
+      type: DataTypes.STRING(255),
+      allowNull: true,
+      defaultValue: "0"
+    },
+    rewardTokenId: {
+      type: DataTypes.INTEGER,
+      allowNull: true,
+      references: {
+        model: 'tokens',
+        key: 'id'
+      }
+    },
+    visible: {
+      type: DataTypes.BOOLEAN,
+      allowNull: true,
+      defaultValue: true
+    },
+    contractCreationDate: {
+      type: DataTypes.STRING(255),
+      allowNull: true
+    },
+    nftImage: {
+      type: DataTypes.STRING(255),
+      allowNull: true
+    },
+    ipfsUrl: {
+      type: DataTypes.STRING(255),
+      allowNull: true
+    },
+    type: {
+      type: DataTypes.STRING(255),
+      allowNull: true
+    },
+    origin: {
+      type: DataTypes.TEXT,
+      allowNull: true
+    },
+    userId: {
+      type: DataTypes.INTEGER,
+      allowNull: true,
+      references: {
+        model: 'users',
+        key: 'id'
+      }
+    }
+  }, {
+    tableName: 'issues',
+    schema: 'public',
+    timestamps: true,
+    indexes: [
+      {
+        name: "issues_pkey",
+        unique: true,
+        fields: [
+          { name: "id" },
+        ]
+      },
+    ]
+  }) as typeof issues;
   }
 }

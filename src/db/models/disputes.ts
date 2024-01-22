@@ -40,49 +40,49 @@ export class disputes extends Model<disputesAttributes, disputesCreationAttribut
 
   static initModel(sequelize: Sequelize.Sequelize): typeof disputes {
     return sequelize.define('disputes', {
-      id: {
-        autoIncrement: true,
-        type: DataTypes.INTEGER,
-        allowNull: false,
-        primaryKey: true
-      },
-      issueId: {
-        type: DataTypes.INTEGER,
-        allowNull: false,
-        references: {
-          model: 'issues',
-          key: 'id'
-        }
-      },
-      address: {
-        type: DataTypes.STRING(255),
-        allowNull: false
-      },
-      proposalId: {
-        type: DataTypes.INTEGER,
-        allowNull: false,
-        references: {
-          model: 'merge_proposals',
-          key: 'id'
-        }
-      },
-      weight: {
-        type: DataTypes.STRING(255),
-        allowNull: true
+    id: {
+      autoIncrement: true,
+      type: DataTypes.INTEGER,
+      allowNull: false,
+      primaryKey: true
+    },
+    issueId: {
+      type: DataTypes.INTEGER,
+      allowNull: false,
+      references: {
+        model: 'issues',
+        key: 'id'
       }
-    }, {
-      tableName: 'disputes',
-      schema: 'public',
-      timestamps: true,
-      indexes: [
-        {
-          name: "disputes_pkey",
-          unique: true,
-          fields: [
-            {name: "id"},
-          ]
-        },
-      ]
-    }) as typeof disputes;
+    },
+    address: {
+      type: DataTypes.STRING(255),
+      allowNull: false
+    },
+    proposalId: {
+      type: DataTypes.INTEGER,
+      allowNull: false,
+      references: {
+        model: 'merge_proposals',
+        key: 'id'
+      }
+    },
+    weight: {
+      type: DataTypes.STRING(255),
+      allowNull: true
+    }
+  }, {
+    tableName: 'disputes',
+    schema: 'public',
+    timestamps: true,
+    indexes: [
+      {
+        name: "disputes_pkey",
+        unique: true,
+        fields: [
+          { name: "id" },
+        ]
+      },
+    ]
+  }) as typeof disputes;
   }
 }

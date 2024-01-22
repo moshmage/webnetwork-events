@@ -4,7 +4,7 @@ import type { chains, chainsId } from './chains';
 import type { issues, issuesId } from './issues';
 import type { network_tokens, network_tokensId } from './network_tokens';
 import type { networks, networksId } from './networks';
-import type {users_locked_registry, users_locked_registryId} from './users_locked_registry';
+import type { users_locked_registry, users_locked_registryId } from './users_locked_registry';
 
 export interface tokensAttributes {
   id: number;
@@ -106,72 +106,72 @@ export class tokens extends Model<tokensAttributes, tokensCreationAttributes> im
 
   static initModel(sequelize: Sequelize.Sequelize): typeof tokens {
     return sequelize.define('tokens', {
-      id: {
-        autoIncrement: true,
-        type: DataTypes.INTEGER,
-        allowNull: false,
-        primaryKey: true
-      },
-      name: {
-        type: DataTypes.STRING(255),
-        allowNull: false
-      },
-      symbol: {
-        type: DataTypes.STRING(255),
-        allowNull: false
-      },
-      address: {
-        type: DataTypes.STRING(255),
-        allowNull: false
-      },
-      isTransactional: {
-        type: DataTypes.BOOLEAN,
-        allowNull: false,
-        defaultValue: false
-      },
-      isAllowed: {
-        type: DataTypes.BOOLEAN,
-        allowNull: true
-      },
-      chain_id: {
-        type: DataTypes.INTEGER,
-        allowNull: true,
-        references: {
-          model: 'chains',
-          key: 'chainId'
-        }
-      },
-      minimum: {
-        type: DataTypes.STRING(255),
-        allowNull: true,
-        defaultValue: "0"
-      },
-      isReward: {
-        type: DataTypes.BOOLEAN,
-        allowNull: false,
-        defaultValue: false
-      },
-      last_price_used: {
-        type: DataTypes.JSON,
-        allowNull: true
-      },
-      icon: {
-        type: DataTypes.STRING(255),
-        allowNull: true
+    id: {
+      autoIncrement: true,
+      type: DataTypes.INTEGER,
+      allowNull: false,
+      primaryKey: true
+    },
+    name: {
+      type: DataTypes.STRING(255),
+      allowNull: false
+    },
+    symbol: {
+      type: DataTypes.STRING(255),
+      allowNull: false
+    },
+    address: {
+      type: DataTypes.STRING(255),
+      allowNull: false
+    },
+    isTransactional: {
+      type: DataTypes.BOOLEAN,
+      allowNull: false,
+      defaultValue: false
+    },
+    isAllowed: {
+      type: DataTypes.BOOLEAN,
+      allowNull: true
+    },
+    chain_id: {
+      type: DataTypes.INTEGER,
+      allowNull: true,
+      references: {
+        model: 'chains',
+        key: 'chainId'
       }
-    }, {
-      tableName: 'tokens',
-      schema: 'public',
-      timestamps: false,
-      indexes: [
-        {
-          name: "tokens_pkey",
-          unique: true,
-          fields: [
-            {name: "id"},
-          ]
-        },
-      ]
-    }) as typeof tokens;
+    },
+    minimum: {
+      type: DataTypes.STRING(255),
+      allowNull: true,
+      defaultValue: "0"
+    },
+    isReward: {
+      type: DataTypes.BOOLEAN,
+      allowNull: false,
+      defaultValue: false
+    },
+    last_price_used: {
+      type: DataTypes.JSON,
+      allowNull: true
+    },
+    icon: {
+      type: DataTypes.STRING(255),
+      allowNull: true
+    }
+  }, {
+    tableName: 'tokens',
+    schema: 'public',
+    timestamps: false,
+    indexes: [
+      {
+        name: "tokens_pkey",
+        unique: true,
+        fields: [
+          { name: "id" },
+        ]
+      },
+    ]
+  }) as typeof tokens;
   }
 }
