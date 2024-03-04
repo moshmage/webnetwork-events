@@ -42,7 +42,7 @@ async function validateToken(connection: Web3Connection, address, isTransactiona
   if (!token?.id) {
     const erc20 = new ERC20(connection, address);
 
-    await erc20.loadContract();
+    await erc20.start();
 
     const icon = await getCoinIconByChainAndContractAddress(address, +chainId) || undefined
 
