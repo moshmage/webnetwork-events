@@ -14,7 +14,7 @@ const {EVENTS_CHAIN_ID} = process.env;
 
 export async function getBountyFromChain(connection: Web3Connection, address, id, name) {
   const actor = new Network_v2(connection, address)
-  await actor.loadContract();
+  await actor.start();
   const bounty = await actor.getBounty(+id);
   if (!bounty)
     logger.warn(NETWORK_BOUNTY_NOT_FOUND(name, id, address));
