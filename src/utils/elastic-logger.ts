@@ -15,12 +15,22 @@ export const elasticLoggerMaker = (): LoggerPlugin => ({
       return;
     }
 
+    /* this is needed because Scribal makes magic */
+    const _params = contents?.[1]?.[0];
+    const params =
+      (typeof _params === "string" || typeof _params === "number")
+        ? {value: _params}
+        : Array.isArray(_params)
+          ? {value_array: _params}
+          : _params;
+
     new Client({node, auth: {username, password}})
       .index({
         index: `bepro-processor-logs-${index}`,
         document: {
           level,
-          message: contents?.[Symbol.for('message')],
+          message: contents[0],
+          params,
           createdAt: new Date().toISOString(),
         }
       })
