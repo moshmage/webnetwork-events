@@ -5,7 +5,7 @@ const {
   NEXT_ELASTIC_SEARCH_URL: node,
   NEXT_ELASTIC_SEARCH_USERNAME: username,
   NEXT_ELASTIC_SEARCH_PASSWORD: password,
-  LOG_APP_NAME: index = "webnetwork-events-logs"
+  NEXT_LOG_APP_NAME: index = "webnetwork-events-logs"
 } = process.env;
 
 export const elasticLoggerMaker = (): LoggerPlugin => ({
