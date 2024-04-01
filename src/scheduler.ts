@@ -5,8 +5,6 @@ import {GlobalCatcher} from "./utils/global-catcher";
 
 GlobalCatcher();
 
-let restarter: NodeJS.Timer | null = null;
-
 function startTimedEvents() {
 
   const startTimeoutForMidnightAction = (key, callback) => {
